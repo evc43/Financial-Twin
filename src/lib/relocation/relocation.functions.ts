@@ -21,7 +21,7 @@ export const relocationAnalyzeFn = createServerFn({ method: "POST" })
   .inputValidator((data: unknown): RelocationAnalyzeInputs => inputsSchema.parse(data))
   .handler(async ({ data }): Promise<RelocationResult> => {
     const { analyzeRelocation } = await import("./relocationEngine");
-    return analyzeRelocation(
+    const result = analyzeRelocation(
       {
         city: data.currentCity,
         state: data.currentState,
@@ -36,4 +36,9 @@ export const relocationAnalyzeFn = createServerFn({ method: "POST" })
       },
       { monthlySpendingExRent: data.monthlySpendingExRent },
     );
+
+    const { adviseRelocation } = await import("./relocationAdvisor.server");
+    const advice = await adviseRelocation(result);
+
+    return { ...result, advice };
   });

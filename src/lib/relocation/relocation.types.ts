@@ -26,7 +26,14 @@ export interface LocationBreakdown {
   monthlySurplus: number;
 }
 
+export interface RelocationAdvice {
+  headline: string;
+  reasoning: string;
+  recommendation: string;
+}
+
 export interface RelocationResult {
+  advice?: RelocationAdvice | null;
   current: LocationBreakdown;
   offer: LocationBreakdown;
   surplusDelta: number; // offer.surplus - current.surplus (per month)
