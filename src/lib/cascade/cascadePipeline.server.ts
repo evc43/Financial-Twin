@@ -11,6 +11,7 @@ import {
   type CascadeResult,
   type PlaidTx,
 } from "./cascadeEngine";
+import type { CascadeInputs } from "./cascade.types";
 
 // ================================================================
 // 0. Config
@@ -99,8 +100,8 @@ export function buildDemoCustomUser(inputs: CascadeInputs) {
   }
 }
 
-export async function pullDemoTransactions(): Promise<PlaidTx[]> {
-  const customUser = buildDemoCustomUser();
+export async function pullDemoTransactions(inputs: CascadeInputs): Promise<PlaidTx[]> {
+  const customUser = buildDemoCustomUser(inputs);
 
   const pt = await plaid("/sandbox/public_token/create", {
     institution_id: SANDBOX_INSTITUTION,
@@ -328,8 +329,8 @@ export interface CascadeDemoResponse {
   explanation: CascadeExplanation | null;
 }
 
-export async function runCascadeDemo(): Promise<CascadeDemoResponse> {
-  const txns = await pullDemoTransactions();
+export async function runCascadeDemo(inputs: CascadeInputs): Promise<CascadeDemoResponse> {
+  const txns = await pullDemoTransactions(inputs);
   const model = await structureTransactions(txns);
   const cascade = detectCascade(model, txns, { projectionMonths: 18, bufferDays: 2 });
   const explanation = cascade.detected ? await explainCascade(cascade) : null;
@@ -347,6 +348,14 @@ export async function runCascadeDemo(): Promise<CascadeDemoResponse> {
 function addDays(d: Date, n: number): Date {
   const x = new Date(d);
   x.setUTCDate(x.getUTCDate() + n);
+  return x;
+}
+function dayInMonth(monthStart: Date, day: number): Date {
+  const daysInMonth = new Date(
+    Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  const x = new Date(monthStart);
+  x.setUTCDate(Math.min(day, daysInMonth));
   return x;
 }
 function addMonths(d: Date, n: number): Date {
