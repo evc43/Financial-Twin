@@ -42,7 +42,7 @@ function modelEndpoint(): { url: string; key: string; nvidia: boolean } {
 // 1. PLAID — the demo fixture + the pull
 // ================================================================
 
-export function buildDemoCustomUser() {
+export function buildDemoCustomUser(inputs: CascadeInputs) {
   const transactions: {
     date_transacted: string;
     date_posted: string;
@@ -57,13 +57,17 @@ export function buildDemoCustomUser() {
   firstOfThisMonth.setUTCHours(0, 0, 0, 0);
 
   for (let i = 0; i < CYCLES; i++) {
-    const payday = addMonths(firstOfThisMonth, -i);
-    const rent = addDays(payday, -2);
-    const feeDay = addDays(payday, -1);
+    const monthStart = addMonths(firstOfThisMonth, -i);
+    const payday = dayInMonth(monthStart, inputs.paydayOfMonth);
+    const rent = dayInMonth(monthStart, inputs.rentDayOfMonth);
 
-    push(transactions, payday, -3000, "ACH DIRECT DEP PAYROLL EMPLOYERCO INC");
-    push(transactions, rent, 1400, "AUTOPAY RENT SUNSET PROPERTY MGMT");
-    push(transactions, feeDay, 35, "OVERDRAFT FEE");
+    push(transactions, payday, -inputs.monthlyIncome, "ACH DIRECT DEP PAYROLL EMPLOYERCO INC");
+    push(transactions, rent, inputs.rentAmount, "AUTOPAY RENT SUNSET PROPERTY MGMT");
+
+    // Overdraft fee only when rent posts BEFORE income arrives that month.
+    if (rent.getTime() < payday.getTime()) {
+      push(transactions, addDays(payday, -1), 35, "OVERDRAFT FEE");
+    }
 
     push(transactions, addDays(payday, 3), 92.41, "WHOLE FOODS MARKET");
     push(transactions, addDays(payday, 8), 11.99, "SPOTIFY USA");
@@ -81,7 +85,7 @@ export function buildDemoCustomUser() {
       {
         type: "depository",
         subtype: "checking",
-        starting_balance: 650,
+        starting_balance: inputs.checkingBalance,
         meta: { name: "Plaid Checking", mask: "0000" },
         numbers: { ach: [{ account: "1111222233330000", routing: "011401533" }] },
         transactions,
