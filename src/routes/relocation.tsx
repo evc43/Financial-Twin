@@ -40,7 +40,6 @@ type FieldKey =
   | "offerRent";
 
 const CITY_OPTIONS = cityCostData
-  .filter((c) => c.verified)
   .map((c) => ({ city: c.city, state: c.state }))
   .sort((a, b) => a.city.localeCompare(b.city));
 
