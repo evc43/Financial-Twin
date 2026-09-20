@@ -37,6 +37,7 @@ function Cascades() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CascadeDemoResponse | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   async function onDetect() {
     setLoading(true);
