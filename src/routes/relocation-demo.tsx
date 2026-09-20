@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { RelocationReport } from "@/components/relocation/RelocationReport";
 import { mockRelocationReport } from "@/lib/relocation/mockRelocationReport";
 
-export const Route = createFileRoute("/relocation/demo")({
+export const Route = createFileRoute("/relocation-demo")({
   head: () => ({
     meta: [
       { title: "Relocation Offer Comparison — sample report" },
