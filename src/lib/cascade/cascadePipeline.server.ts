@@ -113,20 +113,33 @@ export async function pullDemoTransactions(): Promise<PlaidTx[]> {
 
   await plaid("/transactions/refresh", { access_token: accessToken }).catch(() => {});
 
+  // Sandbox transaction generation is asynchronous: the first sync often returns
+  // only a partial first page. Re-sync from scratch until the count stops growing.
   let added: any[] = [];
-  for (let attempt = 0; attempt < 5 && added.length === 0; attempt++) {
-    if (attempt) await sleep(1500);
+  for (let attempt = 0; attempt < 8; attempt++) {
+    if (attempt) await sleep(2000);
+
+    const page: any[] = [];
     let cursor: string | undefined;
-    added = [];
-    while (true) {
+    let pages = 0;
+    // Page through EVERY result: keep calling with next_cursor while has_more is true.
+    while (pages < 50) {
       const sync = await plaid("/transactions/sync", {
         access_token: accessToken,
+        count: 500,
         ...(cursor ? { cursor } : {}),
       });
-      added.push(...sync.added);
+      pages++;
+      page.push(...(sync.added ?? []));
       cursor = sync.next_cursor;
       if (!sync.has_more) break;
     }
+
+    if (page.length > added.length) {
+      added = page;
+      continue; // still growing — sandbox may not have finished generating
+    }
+    if (added.length > 0) break;
   }
 
   return added.map((t) => ({
