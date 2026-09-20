@@ -177,10 +177,10 @@ function Relocation() {
             </span>
           </div>
           <Link
-            to="/"
+            to="/relocation-demo"
             className="text-sm font-semibold text-ink-soft underline underline-offset-2 hover:text-ink"
           >
-            Cascades
+            Sample report
           </Link>
         </div>
 
