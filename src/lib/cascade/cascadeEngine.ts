@@ -168,8 +168,8 @@ export function detectCascade(
         { label: `Rent drafts ${gapDays}d before payday`, amount: model.rent.amount },
         { label: "Checking dips below $0" },
         { label: "Overdraft fee", amount: recurringMonthlyFee },
-        ...(observedFeeTotal > recurringMonthlyFee
-          ? [{ label: "Knock-on fees", amount: round2(observedFeeTotal - recurringMonthlyFee) }]
+        ...(oneOffFeeTotal > 0
+          ? [{ label: "One-time knock-on fee", amount: oneOffFeeTotal }]
           : []),
         { label: `${projectionMonths}-month impact`, amount: projectedFeeCost },
       ]
@@ -185,6 +185,7 @@ export function detectCascade(
     observedFeeCount,
     observedFeeTotal,
     recurringMonthlyFee,
+    oneOffFeeTotal,
     projectionMonths,
     projectedFeeCost,
     recommendedNewRentDay,
