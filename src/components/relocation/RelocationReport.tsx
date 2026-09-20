@@ -171,7 +171,9 @@ function CityCard({
       </div>
 
       <dl className="mt-4 divide-y divide-[var(--line-soft)]">
-        <LineItem label="Net pay (annual)" value={currency(bd.netAnnual)} />
+        {period === "monthly" ? (
+          <LineItem label="Net pay (annual)" value={currency(bd.netAnnual)} />
+        ) : null}
         <LineItem
           label={period === "annual" ? "Net pay (annual)" : "Net pay (monthly)"}
           value={currency(per(bd.netMonthly, period))}
