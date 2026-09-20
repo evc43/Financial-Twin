@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
-import incomeMapAsset from "@/assets/income-needed-by-state-2026.webp.asset.json";
 import { RelocationReport } from "@/components/relocation/RelocationReport";
+import { StateIncomeMap } from "@/components/relocation/StateIncomeMap";
 import { cityCostData, getCityCost } from "@/lib/relocation/costOfLivingData";
 import { relocationAnalyzeFn } from "@/lib/relocation/relocation.functions";
 import type { RelocationResult } from "@/lib/relocation/relocation.types";
@@ -266,13 +266,8 @@ function Relocation() {
           <div className="mt-10 space-y-8">
             <RelocationReport data={result} />
 
-            <section className="overflow-hidden rounded-[var(--radius)] bg-card p-2 shadow-[0_1px_2px_rgba(18,24,20,0.04),0_10px_30px_-18px_rgba(18,24,20,0.25)]">
-              <img
-                src={incomeMapAsset.url}
-                alt="Map of the income needed to live comfortably in every U.S. state in 2026, ranging from $81K in West Virginia to $129K in Hawaii"
-                className="block w-full max-h-[525px] object-cover object-center rounded-[calc(var(--radius)-0.5rem)]"
-                loading="lazy"
-              />
+            <section className="overflow-hidden rounded-[var(--radius)] bg-card p-3 shadow-[0_1px_2px_rgba(18,24,20,0.04),0_10px_30px_-18px_rgba(18,24,20,0.25)]">
+              <StateIncomeMap />
             </section>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
