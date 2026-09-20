@@ -81,18 +81,41 @@ const VERDICT: Record<RelocationResult["verdict"], { label: string; blurb: strin
   worse: { label: "Worse", blurb: "Despite the headline number, you'd keep less each month." },
 };
 
-function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+function Row({
+  label,
+  value,
+  strong,
+  emphasis,
+  note,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  emphasis?: boolean;
+  note?: string;
+}) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2.5">
-      <dt className="min-w-0 truncate text-sm text-ink-soft">{label}</dt>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2">
+      <dt
+        className={
+          emphasis
+            ? "min-w-0 truncate text-sm font-bold text-ink"
+            : "min-w-0 truncate text-sm text-ink-soft"
+        }
+      >
+        {label}
+      </dt>
       <dd
         className={
           strong
             ? "font-display text-lg font-bold text-ink"
-            : "text-[15px] font-medium text-ink"
+            : emphasis
+              ? "text-[15px] font-bold text-ink"
+              : "text-[15px] font-medium text-ink"
         }
       >
         {value}
+        {note && <span className="ml-1.5 text-xs font-medium text-ink-faint">{note}</span>}
       </dd>
     </div>
   );
