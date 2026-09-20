@@ -65,9 +65,16 @@ export function buildDemoCustomUser(inputs: CascadeInputs) {
     push(transactions, payday, -inputs.monthlyIncome, "ACH DIRECT DEP PAYROLL EMPLOYERCO INC");
     push(transactions, rent, inputs.rentAmount, "AUTOPAY RENT SUNSET PROPERTY MGMT");
 
-    // Overdraft fee only when rent posts BEFORE income arrives that month.
-    if (rent.getTime() < payday.getTime()) {
-      push(transactions, addDays(payday, -1), 35, "OVERDRAFT FEE");
+    // Overdraft fee whenever rent posts within ~5 days BEFORE the NEXT paycheck.
+    // The next paycheck may be this month (rentDay < payDay) or next month
+    // (rentDay > payDay, i.e. rent falls late and payday is early next month).
+    const nextPayday =
+      rent.getTime() < payday.getTime()
+        ? payday
+        : dayInMonth(addMonths(monthStart, 1), inputs.paydayOfMonth);
+    const gapDays = Math.round((nextPayday.getTime() - rent.getTime()) / 86_400_000);
+    if (gapDays > 0 && gapDays <= 5) {
+      push(transactions, addDays(nextPayday, -1), 35, "OVERDRAFT FEE");
     }
 
     push(transactions, addDays(payday, 3), 92.41, "WHOLE FOODS MARKET");
