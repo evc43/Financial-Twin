@@ -352,9 +352,16 @@ export function RelocationReport({ data }: { data: RelocationReportData }) {
             </span>
           </button>
           {showReasoning && (
-            <p className="px-6 pb-6 text-[15px] leading-relaxed text-ink-soft">
-              {data.advice.reasoning}
-            </p>
+            <div className="px-6 pb-6">
+              <p className="text-[15px] leading-relaxed text-ink-soft">
+                {data.advice.reasoning}
+              </p>
+              {period === "annual" && (
+                <p className="mt-3 text-xs font-semibold text-ink-soft/70">
+                  Figures in this explanation are monthly — multiply by 12 for the yearly view.
+                </p>
+              )}
+            </div>
           )}
         </section>
       )}
