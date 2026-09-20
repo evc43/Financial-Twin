@@ -390,7 +390,12 @@ function Relocation() {
                   ? `The move costs about ${money(result.firstYearMoveCost)} up front, and you don't keep more each month — so it never pays that back.`
                   : `The move costs about ${money(result.firstYearMoveCost)} up front, but the extra ${money(Math.abs(result.surplusDelta))} you keep each month pays that back in ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — after that it's pure gain.`}
               </p>
+              <p className="mt-2 text-xs leading-relaxed text-ink-faint">
+                The {money(result.firstYearMoveCost - result.offer.monthlyRent)} is a rough moving
+                estimate — adjust it for your real quote. The deposit is one month of your new rent.
+              </p>
             </section>
+
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <button
