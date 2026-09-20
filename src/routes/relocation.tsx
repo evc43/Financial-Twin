@@ -241,7 +241,12 @@ function Relocation() {
               </div>
             )}
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-4">
+              {loading && (
+                <p className="text-sm text-ink-soft" aria-live="polite">
+                  Running both cities through every tax layer — this takes a few seconds.
+                </p>
+              )}
               <button
                 type="button"
                 disabled={loading}
