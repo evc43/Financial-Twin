@@ -396,7 +396,15 @@ function Relocation() {
                   strong
                 />
                 <div className="py-1">
-                  <div className="pl-4">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
+                    <dt className="min-w-0 truncate text-sm font-bold text-ink">
+                      One-time move cost
+                    </dt>
+                    <dd className="font-display text-lg font-bold text-ink">
+                      {money(result.firstYearMoveCost)}
+                    </dd>
+                  </div>
+                  <div className="border-b border-[var(--line-soft)] pb-2 pl-4">
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
                       <dt className="min-w-0 truncate text-[13px] font-normal text-ink-faint">
                         Moving &amp; logistics (estimate)
@@ -413,14 +421,6 @@ function Relocation() {
                         {money(result.offer.monthlyRent)}
                       </dd>
                     </div>
-                  </div>
-                  <div className="mt-1 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-ink/25 pt-2.5">
-                    <dt className="min-w-0 truncate text-sm font-bold text-ink">
-                      One-time move cost
-                    </dt>
-                    <dd className="font-display text-lg font-bold text-ink">
-                      {money(result.firstYearMoveCost)}
-                    </dd>
                   </div>
                 </div>
                 <Row
