@@ -32,6 +32,50 @@ function money(n?: number) {
   return `$${Math.round(n).toLocaleString()}`;
 }
 
+function whyNoCascade(result: CascadeDemoResponse): { headline: string; reasons: string[] } {
+  const c = result.cascade;
+  const reasons: string[] = [];
+  let headline = "Your money lands before your big bills leave.";
+
+  if (!result.model.income) {
+    headline = "We couldn't spot a recurring paycheck.";
+    reasons.push("No repeating deposit was found in the history, so there's no payday to compare against.");
+  } else {
+    reasons.push(`Paycheck lands on day ${c.payDay} of the month.`);
+  }
+
+  if (!result.model.rent) {
+    headline = "We couldn't spot a recurring rent or mortgage payment.";
+    reasons.push("No repeating large housing payment was found in the history.");
+  } else {
+    reasons.push(`Rent leaves on day ${c.rentDay} of the month.`);
+  }
+
+  if (result.model.income && result.model.rent && !c.rentLandsBeforePay) {
+    headline = "Your rent isn't landing in the danger window before payday.";
+    reasons.push(
+      c.gapDays !== null && c.gapDays > 7
+        ? `Rent clears about ${c.gapDays} days before the next paycheck — far enough out that the balance recovers first.`
+        : "Rent clears on or after payday, so the money is already in the account when it leaves.",
+    );
+  }
+
+  if (c.observedFeeCount === 0) {
+    reasons.push("No overdraft, NSF or returned-payment fees appear in this history.");
+  } else if (c.recurringMonthlyFee === 0) {
+    reasons.push(
+      `${c.observedFeeCount} fee${c.observedFeeCount > 1 ? "s" : ""} totalling ${money(
+        c.oneOffFeeTotal || c.observedFeeTotal,
+      )} showed up, but only in a single month — that's a one-off, not a repeating pattern.`,
+    );
+    if (result.model.income && result.model.rent && c.rentLandsBeforePay) {
+      headline = "The fees here were one-offs, not a monthly pattern.";
+    }
+  }
+
+  return { headline, reasons };
+}
+
 type Field = keyof CascadeInputs;
 
 const FIELDS: { key: Field; label: string; hint: string; prefix?: string; max?: number }[] = [
@@ -305,7 +349,9 @@ function Cascades() {
             <div>
               <p className="text-sm font-semibold text-forest">Your cascade</p>
               <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-ink">
-                One small date, one repeating cost
+                {result.explanation
+                  ? "One small date, one repeating cost"
+                  : "No cascade in your timing"}
               </h1>
             </div>
 
@@ -359,7 +405,28 @@ function Cascades() {
                 </section>
               </>
             ) : (
-              <p className="text-sm text-ink-soft">No cascade found in this account history.</p>
+              <section className="rounded-[var(--radius)] bg-card p-6 sm:p-7">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">
+                  Why there's no cascade
+                </h2>
+                <p className="mt-2 font-display text-2xl font-bold leading-snug text-ink">
+                  {whyNoCascade(result).headline}
+                </p>
+                <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink-soft">
+                  {whyNoCascade(result).reasons.map((r) => (
+                    <li key={r} className="flex gap-2">
+                      <span aria-hidden className="text-forest">
+                        •
+                      </span>
+                      <span>{r}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-sm text-ink-soft">
+                  Try a rent day that falls in the few days <em>before</em> your payday — that's
+                  when the chain reaction starts.
+                </p>
+              </section>
             )}
 
             <div className="flex flex-wrap items-center gap-4">
