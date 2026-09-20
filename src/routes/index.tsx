@@ -142,6 +142,41 @@ function Cascades() {
                 No cascade found in this account history.
               </p>
             )}
+
+            <section className="rounded-2xl border border-dashed border-border bg-muted/40 p-6">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Debug — raw data
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Transactions pulled: {result.transactionsPulled}
+              </p>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">firstTransaction</p>
+                  <pre className="mt-1 max-h-72 overflow-auto rounded-lg bg-card p-3 text-xs text-card-foreground">
+                    {JSON.stringify(result.firstTransaction, null, 2)}
+                  </pre>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">model</p>
+                  <pre className="mt-1 max-h-96 overflow-auto rounded-lg bg-card p-3 text-xs text-card-foreground">
+                    {JSON.stringify(result.model, null, 2)}
+                  </pre>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">cascade</p>
+                  <pre className="mt-1 max-h-96 overflow-auto rounded-lg bg-card p-3 text-xs text-card-foreground">
+                    {JSON.stringify(result.cascade, null, 2)}
+                  </pre>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">full response</p>
+                  <pre className="mt-1 max-h-96 overflow-auto rounded-lg bg-card p-3 text-xs text-card-foreground">
+                    {JSON.stringify(result, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            </section>
           </div>
         )}
       </div>
