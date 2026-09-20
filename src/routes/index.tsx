@@ -470,11 +470,11 @@ function Cascades() {
                       animationFillMode: "backwards",
                     }}
                   >
-                    <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-cream/70">
+                    <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-cream-deep/70">
                       {last.label}
                     </h2>
                     {last.amount !== undefined && (
-                      <p className="mt-2 font-display text-5xl font-bold tracking-tight text-cream sm:text-6xl">
+                      <p className="mt-2 font-display text-5xl font-bold tracking-tight text-cream-deep sm:text-6xl">
                         <CountMoney
                           value={last.amount}
                           delay={Math.max(0, chain.length - 1) * 200}
