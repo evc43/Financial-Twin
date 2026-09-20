@@ -42,32 +42,83 @@ const BADGE: Record<"good" | "warn" | "bad", string> = {
 
 const TAX_COLORS = ["var(--ink)", "var(--ink-soft)", "var(--forest)", "var(--amber-text)"];
 
-function TaxBar({ bd }: { bd: LocationBreakdown }) {
+function TaxPie({ bd }: { bd: LocationBreakdown }) {
+  const [active, setActive] = useState<number | null>(null);
+
   const parts = [
     { label: "Federal", value: bd.federalTax },
     { label: "FICA", value: bd.fica },
     { label: "State", value: bd.stateTax },
     { label: "City", value: bd.localTax },
   ];
-  const total = parts.reduce((s, p) => s + p.value, 0) || 1;
+  const total = parts.reduce((s, p) => s + p.value, 0);
+  const safeTotal = total || 1;
+
+  // Donut geometry
+  const R = 54;
+  const C = 2 * Math.PI * R;
+  let offset = 0;
+  const arcs = parts.map((p, i) => {
+    const len = (p.value / safeTotal) * C;
+    const arc = { ...p, i, len, offset };
+    offset += len;
+    return arc;
+  });
+
+  const shown = active === null ? null : parts[active];
 
   return (
-    <div>
-      <div
-        className="flex h-2.5 w-full overflow-hidden rounded-full bg-line-soft"
-        role="img"
-        aria-label={`Tax split for ${bd.city}`}
-      >
-        {parts.map((p, i) => (
-          <span
-            key={p.label}
-            style={{ width: `${(p.value / total) * 100}%`, background: TAX_COLORS[i] }}
-          />
-        ))}
+    <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+      <div className="relative shrink-0">
+        <svg
+          viewBox="0 0 140 140"
+          className="h-[140px] w-[140px] -rotate-90"
+          role="img"
+          aria-label={`Tax split for ${bd.city}`}
+        >
+          <circle cx="70" cy="70" r={R} fill="none" stroke="var(--line-soft)" strokeWidth="18" />
+          {arcs.map((a) => (
+            <circle
+              key={a.label}
+              cx="70"
+              cy="70"
+              r={R}
+              fill="none"
+              stroke={TAX_COLORS[a.i]}
+              strokeWidth={active === a.i ? 24 : 18}
+              strokeDasharray={`${a.len} ${C - a.len}`}
+              strokeDashoffset={-a.offset}
+              className="cursor-pointer transition-[stroke-width,opacity] duration-200"
+              style={{ opacity: active === null || active === a.i ? 1 : 0.35 }}
+              onMouseEnter={() => setActive(a.i)}
+              onMouseLeave={() => setActive(null)}
+            />
+          ))}
+        </svg>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-faint">
+            {shown ? shown.label : "Total"}
+          </span>
+          <span className="font-display text-[15px] font-bold leading-tight text-ink">
+            {currency(shown ? shown.value : total)}
+          </span>
+          {shown && total > 0 && (
+            <span className="text-[10px] font-semibold text-ink-faint">
+              {Math.round((shown.value / safeTotal) * 100)}%
+            </span>
+          )}
+        </div>
       </div>
-      <dl className="mt-3 space-y-1.5">
+
+      <dl className="w-full space-y-1.5">
         {parts.map((p, i) => (
-          <div key={p.label} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div
+            key={p.label}
+            onMouseEnter={() => setActive(i)}
+            onMouseLeave={() => setActive(null)}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-md px-1 py-0.5 transition-colors"
+            style={{ background: active === i ? "var(--line-soft)" : "transparent" }}
+          >
             <dt className="flex min-w-0 items-center gap-2 text-[13px] text-ink-soft">
               <span
                 aria-hidden
