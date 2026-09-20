@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
+import { cityCostData, getCityCost } from "@/lib/relocation/costOfLivingData";
 import { relocationAnalyzeFn } from "@/lib/relocation/relocation.functions";
 import type { RelocationResult } from "@/lib/relocation/relocation.types";
 
@@ -34,30 +35,42 @@ function money(n: number | null | undefined) {
 
 type FieldKey =
   | "currentCity"
-  | "currentState"
   | "currentSalary"
   | "currentRent"
   | "monthlySpendingExRent"
   | "offerCity"
-  | "offerState"
   | "offerSalary"
   | "offerRent";
 
+const CITY_OPTIONS = [...cityCostData]
+  .map((c) => ({ city: c.city, state: c.state }))
+  .sort((a, b) => a.city.localeCompare(b.city));
+
+function stateForCity(city: string) {
+  return getCityCost(city)?.state ?? "";
+}
+
 const DEFAULTS: Record<FieldKey, string> = {
   currentCity: "New York",
-  currentState: "New York",
   currentSalary: "120000",
   currentRent: "3200",
   monthlySpendingExRent: "1800",
   offerCity: "Austin",
-  offerState: "Texas",
   offerSalary: "125000",
   offerRent: "",
 };
 
-const CURRENT_FIELDS: { key: FieldKey; label: string; hint: string; prefix?: string; text?: boolean }[] = [
-  { key: "currentCity", label: "Current city", hint: "e.g. New York", text: true },
-  { key: "currentState", label: "Current state", hint: "Full state name", text: true },
+type FieldDef = {
+  key: FieldKey;
+  label: string;
+  hint: string;
+  prefix?: string;
+  text?: boolean;
+  select?: boolean;
+};
+
+const CURRENT_FIELDS: FieldDef[] = [
+  { key: "currentCity", label: "Current city", hint: "Pick a supported city.", select: true },
   { key: "currentSalary", label: "Current salary", hint: "Annual gross.", prefix: "$" },
   { key: "currentRent", label: "Current monthly rent", hint: "What housing costs you now.", prefix: "$" },
   {
@@ -68,9 +81,8 @@ const CURRENT_FIELDS: { key: FieldKey; label: string; hint: string; prefix?: str
   },
 ];
 
-const OFFER_FIELDS: { key: FieldKey; label: string; hint: string; prefix?: string; text?: boolean }[] = [
-  { key: "offerCity", label: "Offer city", hint: "e.g. Austin", text: true },
-  { key: "offerState", label: "Offer state", hint: "Full state name", text: true },
+const OFFER_FIELDS: FieldDef[] = [
+  { key: "offerCity", label: "Offer city", hint: "Pick a supported city.", select: true },
   { key: "offerSalary", label: "Offer salary", hint: "Annual gross.", prefix: "$" },
   { key: "offerRent", label: "Offer rent (optional)", hint: "Leave blank to estimate it.", prefix: "$" },
 ];
