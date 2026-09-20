@@ -37,6 +37,7 @@ function Cascades() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CascadeDemoResponse | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   async function onDetect() {
     setLoading(true);
@@ -143,6 +144,17 @@ function Cascades() {
               </p>
             )}
 
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowDebug((v) => !v)}
+                className="text-xs font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                {showDebug ? "Hide debug" : "Debug"}
+              </button>
+            </div>
+
+            {showDebug && (
             <section className="rounded-2xl border border-dashed border-border bg-muted/40 p-6">
               <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                 Debug — raw data
@@ -177,6 +189,7 @@ function Cascades() {
                 </div>
               </div>
             </section>
+            )}
           </div>
         )}
       </div>
