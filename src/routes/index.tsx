@@ -305,7 +305,9 @@ function Cascades() {
             <div>
               <p className="text-sm font-semibold text-forest">Your cascade</p>
               <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-ink">
-                One small date, one repeating cost
+                {result.explanation
+                  ? "One small date, one repeating cost"
+                  : "No cascade in your timing"}
               </h1>
             </div>
 
