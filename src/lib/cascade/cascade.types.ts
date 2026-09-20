@@ -6,6 +6,16 @@ export interface CascadeExplanation {
   narrative: string;
 }
 
+/** The six values collected by the onboarding wizard. */
+export interface CascadeInputs {
+  monthlyIncome: number;
+  paydayOfMonth: number;
+  rentAmount: number;
+  rentDayOfMonth: number;
+  checkingBalance: number;
+  monthlySpending: number;
+}
+
 export interface CascadeDemoResponse {
   transactionsPulled: number;
   firstTransaction: PlaidTx | null;

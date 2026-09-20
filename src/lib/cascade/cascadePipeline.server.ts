@@ -11,6 +11,7 @@ import {
   type CascadeResult,
   type PlaidTx,
 } from "./cascadeEngine";
+import type { CascadeInputs } from "./cascade.types";
 
 // ================================================================
 // 0. Config
@@ -42,7 +43,7 @@ function modelEndpoint(): { url: string; key: string; nvidia: boolean } {
 // 1. PLAID — the demo fixture + the pull
 // ================================================================
 
-export function buildDemoCustomUser() {
+export function buildDemoCustomUser(inputs: CascadeInputs) {
   const transactions: {
     date_transacted: string;
     date_posted: string;
@@ -57,13 +58,17 @@ export function buildDemoCustomUser() {
   firstOfThisMonth.setUTCHours(0, 0, 0, 0);
 
   for (let i = 0; i < CYCLES; i++) {
-    const payday = addMonths(firstOfThisMonth, -i);
-    const rent = addDays(payday, -2);
-    const feeDay = addDays(payday, -1);
+    const monthStart = addMonths(firstOfThisMonth, -i);
+    const payday = dayInMonth(monthStart, inputs.paydayOfMonth);
+    const rent = dayInMonth(monthStart, inputs.rentDayOfMonth);
 
-    push(transactions, payday, -3000, "ACH DIRECT DEP PAYROLL EMPLOYERCO INC");
-    push(transactions, rent, 1400, "AUTOPAY RENT SUNSET PROPERTY MGMT");
-    push(transactions, feeDay, 35, "OVERDRAFT FEE");
+    push(transactions, payday, -inputs.monthlyIncome, "ACH DIRECT DEP PAYROLL EMPLOYERCO INC");
+    push(transactions, rent, inputs.rentAmount, "AUTOPAY RENT SUNSET PROPERTY MGMT");
+
+    // Overdraft fee only when rent posts BEFORE income arrives that month.
+    if (rent.getTime() < payday.getTime()) {
+      push(transactions, addDays(payday, -1), 35, "OVERDRAFT FEE");
+    }
 
     push(transactions, addDays(payday, 3), 92.41, "WHOLE FOODS MARKET");
     push(transactions, addDays(payday, 8), 11.99, "SPOTIFY USA");
@@ -81,7 +86,7 @@ export function buildDemoCustomUser() {
       {
         type: "depository",
         subtype: "checking",
-        starting_balance: 650,
+        starting_balance: inputs.checkingBalance,
         meta: { name: "Plaid Checking", mask: "0000" },
         numbers: { ach: [{ account: "1111222233330000", routing: "011401533" }] },
         transactions,
@@ -95,8 +100,8 @@ export function buildDemoCustomUser() {
   }
 }
 
-export async function pullDemoTransactions(): Promise<PlaidTx[]> {
-  const customUser = buildDemoCustomUser();
+export async function pullDemoTransactions(inputs: CascadeInputs): Promise<PlaidTx[]> {
+  const customUser = buildDemoCustomUser(inputs);
 
   const pt = await plaid("/sandbox/public_token/create", {
     institution_id: SANDBOX_INSTITUTION,
@@ -324,8 +329,8 @@ export interface CascadeDemoResponse {
   explanation: CascadeExplanation | null;
 }
 
-export async function runCascadeDemo(): Promise<CascadeDemoResponse> {
-  const txns = await pullDemoTransactions();
+export async function runCascadeDemo(inputs: CascadeInputs): Promise<CascadeDemoResponse> {
+  const txns = await pullDemoTransactions(inputs);
   const model = await structureTransactions(txns);
   const cascade = detectCascade(model, txns, { projectionMonths: 18, bufferDays: 2 });
   const explanation = cascade.detected ? await explainCascade(cascade) : null;
@@ -343,6 +348,14 @@ export async function runCascadeDemo(): Promise<CascadeDemoResponse> {
 function addDays(d: Date, n: number): Date {
   const x = new Date(d);
   x.setUTCDate(x.getUTCDate() + n);
+  return x;
+}
+function dayInMonth(monthStart: Date, day: number): Date {
+  const daysInMonth = new Date(
+    Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  const x = new Date(monthStart);
+  x.setUTCDate(Math.min(day, daysInMonth));
   return x;
 }
 function addMonths(d: Date, n: number): Date {
