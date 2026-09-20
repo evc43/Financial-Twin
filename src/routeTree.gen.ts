@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RelocationRouteImport } from './routes/relocation'
+import { Route as RelocationDemoRouteImport } from './routes/relocation.demo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,39 @@ const RelocationRoute = RelocationRouteImport.update({
   path: '/relocation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RelocationDemoRoute = RelocationDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => RelocationRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/relocation': typeof RelocationRoute
+  '/relocation': typeof RelocationRouteWithChildren
+  '/relocation/demo': typeof RelocationDemoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/relocation': typeof RelocationRoute
+  '/relocation': typeof RelocationRouteWithChildren
+  '/relocation/demo': typeof RelocationDemoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/relocation': typeof RelocationRoute
+  '/relocation': typeof RelocationRouteWithChildren
+  '/relocation/demo': typeof RelocationDemoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/relocation'
+  fullPaths: '/' | '/relocation' | '/relocation/demo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/relocation'
-  id: '__root__' | '/' | '/relocation'
+  to: '/' | '/relocation' | '/relocation/demo'
+  id: '__root__' | '/' | '/relocation' | '/relocation/demo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  RelocationRoute: typeof RelocationRoute
+  RelocationRoute: typeof RelocationRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +74,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RelocationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/relocation/demo': {
+      id: '/relocation/demo'
+      path: '/demo'
+      fullPath: '/relocation/demo'
+      preLoaderRoute: typeof RelocationDemoRouteImport
+      parentRoute: typeof RelocationRoute
+    }
   }
 }
 
+interface RelocationRouteChildren {
+  RelocationDemoRoute: typeof RelocationDemoRoute
+}
+
+const RelocationRouteChildren: RelocationRouteChildren = {
+  RelocationDemoRoute: RelocationDemoRoute,
+}
+
+const RelocationRouteWithChildren = RelocationRoute._addFileChildren(
+  RelocationRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  RelocationRoute: RelocationRoute,
+  RelocationRoute: RelocationRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
