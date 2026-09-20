@@ -99,18 +99,20 @@ function Row({
   strong,
   emphasis,
   note,
+  accent,
 }: {
   label: string;
   value: string;
   strong?: boolean;
   emphasis?: boolean;
   note?: string;
+  accent?: boolean;
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2">
       <dt
         className={
-          emphasis
+          emphasis || accent
             ? "min-w-0 truncate text-sm font-bold text-ink"
             : "min-w-0 truncate text-sm text-ink-soft"
         }
@@ -119,11 +121,13 @@ function Row({
       </dt>
       <dd
         className={
-          strong
-            ? "font-display text-lg font-bold text-ink"
-            : emphasis
-              ? "text-[15px] font-bold text-ink"
-              : "text-[15px] font-medium text-ink"
+          accent
+            ? "font-display text-xl font-bold text-[var(--forest)]"
+            : strong
+              ? "font-display text-lg font-bold text-ink"
+              : emphasis
+                ? "text-[15px] font-bold text-ink"
+                : "text-[15px] font-medium text-ink"
         }
       >
         {value}
