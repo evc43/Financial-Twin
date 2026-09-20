@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
+import { RelocationReport } from "@/components/relocation/RelocationReport";
 import { cityCostData, getCityCost } from "@/lib/relocation/costOfLivingData";
 import { relocationAnalyzeFn } from "@/lib/relocation/relocation.functions";
 import type { RelocationResult } from "@/lib/relocation/relocation.types";
