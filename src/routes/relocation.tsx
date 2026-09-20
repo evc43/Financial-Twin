@@ -146,8 +146,18 @@ function SurplusCard({
         <Row label="Gross salary" value={money(bd.grossSalary)} />
         <Row label="Federal tax" value={money(bd.federalTax)} />
         <Row label="FICA" value={money(bd.fica)} />
-        <Row label="State tax" value={money(bd.stateTax)} />
-        <Row label="City tax" value={money(bd.localTax)} />
+        <Row
+          label="State tax"
+          value={money(bd.stateTax)}
+          emphasis
+          {...(Math.round(bd.stateTax) === 0 ? { note: "— none here" } : {})}
+        />
+        <Row
+          label="City tax"
+          value={money(bd.localTax)}
+          emphasis
+          {...(Math.round(bd.localTax) === 0 ? { note: "— none here" } : {})}
+        />
         <Row label="Net per month" value={money(bd.netMonthly)} strong />
         <Row label="Rent" value={money(bd.monthlyRent)} />
         <Row label="Other spending" value={money(bd.monthlyNonRent)} />
