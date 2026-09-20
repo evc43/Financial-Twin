@@ -264,6 +264,22 @@ function Relocation() {
               <p className="mt-2 text-[15px] text-ink-soft">{VERDICT[result.verdict].blurb}</p>
             </div>
 
+            {result.advice && (
+              <section className="rounded-[var(--radius)] bg-card p-6 sm:p-7">
+                <h2 className="font-display text-2xl font-bold leading-snug text-ink">
+                  {result.advice.headline}
+                </h2>
+                <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
+                  {result.advice.reasoning}
+                </p>
+                {result.advice.recommendation && (
+                  <p className="mt-4 inline-flex rounded-full bg-sage px-4 py-2 text-sm font-semibold text-ink">
+                    {result.advice.recommendation}
+                  </p>
+                )}
+              </section>
+            )}
+
             <section className="rounded-[var(--radius)] bg-forest px-6 py-8 sm:px-8">
               <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-cream-deep/70">
                 Break-even salary in {result.offer.city}

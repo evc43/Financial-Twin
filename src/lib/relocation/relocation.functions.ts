@@ -36,4 +36,9 @@ export const relocationAnalyzeFn = createServerFn({ method: "POST" })
       },
       { monthlySpendingExRent: data.monthlySpendingExRent },
     );
+
+    const { adviseRelocation } = await import("./relocationAdvisor.server");
+    const advice = await adviseRelocation(result);
+
+    return { ...result, advice };
   });
