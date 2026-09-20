@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
+import { cityCostData, getCityCost } from "@/lib/relocation/costOfLivingData";
 import { relocationAnalyzeFn } from "@/lib/relocation/relocation.functions";
 import type { RelocationResult } from "@/lib/relocation/relocation.types";
 
@@ -34,30 +35,42 @@ function money(n: number | null | undefined) {
 
 type FieldKey =
   | "currentCity"
-  | "currentState"
   | "currentSalary"
   | "currentRent"
   | "monthlySpendingExRent"
   | "offerCity"
-  | "offerState"
   | "offerSalary"
   | "offerRent";
 
+const CITY_OPTIONS = [...cityCostData]
+  .map((c) => ({ city: c.city, state: c.state }))
+  .sort((a, b) => a.city.localeCompare(b.city));
+
+function stateForCity(city: string) {
+  return getCityCost(city)?.state ?? "";
+}
+
 const DEFAULTS: Record<FieldKey, string> = {
   currentCity: "New York",
-  currentState: "New York",
   currentSalary: "120000",
   currentRent: "3200",
   monthlySpendingExRent: "1800",
   offerCity: "Austin",
-  offerState: "Texas",
   offerSalary: "125000",
   offerRent: "",
 };
 
-const CURRENT_FIELDS: { key: FieldKey; label: string; hint: string; prefix?: string; text?: boolean }[] = [
-  { key: "currentCity", label: "Current city", hint: "e.g. New York", text: true },
-  { key: "currentState", label: "Current state", hint: "Full state name", text: true },
+type FieldDef = {
+  key: FieldKey;
+  label: string;
+  hint: string;
+  prefix?: string;
+  text?: boolean;
+  select?: boolean;
+};
+
+const CURRENT_FIELDS: FieldDef[] = [
+  { key: "currentCity", label: "Current city", hint: "Pick a supported city.", select: true },
   { key: "currentSalary", label: "Current salary", hint: "Annual gross.", prefix: "$" },
   { key: "currentRent", label: "Current monthly rent", hint: "What housing costs you now.", prefix: "$" },
   {
@@ -68,9 +81,8 @@ const CURRENT_FIELDS: { key: FieldKey; label: string; hint: string; prefix?: str
   },
 ];
 
-const OFFER_FIELDS: { key: FieldKey; label: string; hint: string; prefix?: string; text?: boolean }[] = [
-  { key: "offerCity", label: "Offer city", hint: "e.g. Austin", text: true },
-  { key: "offerState", label: "Offer state", hint: "Full state name", text: true },
+const OFFER_FIELDS: FieldDef[] = [
+  { key: "offerCity", label: "Offer city", hint: "Pick a supported city.", select: true },
   { key: "offerSalary", label: "Offer salary", hint: "Annual gross.", prefix: "$" },
   { key: "offerRent", label: "Offer rent (optional)", hint: "Leave blank to estimate it.", prefix: "$" },
 ];
@@ -183,12 +195,12 @@ function Relocation() {
         await analyze({
           data: {
             currentCity: values.currentCity.trim(),
-            currentState: values.currentState.trim(),
+            currentState: stateForCity(values.currentCity),
             currentSalary: Number(values.currentSalary) || 0,
             currentRent: Number(values.currentRent) || 0,
             monthlySpendingExRent: Number(values.monthlySpendingExRent) || 0,
             offerCity: values.offerCity.trim(),
-            offerState: values.offerState.trim(),
+            offerState: stateForCity(values.offerCity),
             offerSalary: Number(values.offerSalary) || 0,
             ...(offerRent ? { offerRent: Number(offerRent) || 0 } : {}),
           },
@@ -201,22 +213,39 @@ function Relocation() {
     }
   }
 
-  function field(f: (typeof CURRENT_FIELDS)[number]) {
+  function field(f: FieldDef) {
+    const state = f.select ? stateForCity(values[f.key]) : "";
     return (
       <label key={f.key} className="block min-w-0">
         <span className="text-sm font-medium text-ink-soft">{f.label}</span>
         <span className="mt-2 flex items-center gap-2 rounded-[var(--radius-sm)] border border-border bg-background px-4 py-3 focus-within:border-forest">
           {f.prefix && <span className="text-ink-faint">{f.prefix}</span>}
-          <input
-            type={f.text ? "text" : "number"}
-            min={f.text ? undefined : 0}
-            inputMode={f.text ? "text" : "numeric"}
-            value={values[f.key]}
-            onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
-            className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-hidden"
-          />
+          {f.select ? (
+            <select
+              value={values[f.key]}
+              onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-hidden"
+            >
+              {CITY_OPTIONS.map((c) => (
+                <option key={c.city} value={c.city}>
+                  {c.city}, {c.state}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={f.text ? "text" : "number"}
+              min={f.text ? undefined : 0}
+              inputMode={f.text ? "text" : "numeric"}
+              value={values[f.key]}
+              onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-hidden"
+            />
+          )}
         </span>
-        <span className="mt-1 block text-xs text-ink-faint">{f.hint}</span>
+        <span className="mt-1 block text-xs text-ink-faint">
+          {f.select && state ? `State: ${state}` : f.hint}
+        </span>
       </label>
     );
   }
@@ -366,15 +395,34 @@ function Relocation() {
                   value={`${result.surplusDelta >= 0 ? "+" : "−"}${money(Math.abs(result.surplusDelta))}`}
                   strong
                 />
-                <Row
-                  label="Moving & logistics (estimate)"
-                  value={money(result.firstYearMoveCost - result.offer.monthlyRent)}
-                />
-                <Row
-                  label="Security deposit (1 mo. rent)"
-                  value={money(result.offer.monthlyRent)}
-                />
-                <Row label="One-time move cost" value={money(result.firstYearMoveCost)} strong />
+                <div className="py-1">
+                  <div className="pl-4">
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
+                      <dt className="min-w-0 truncate text-[13px] font-normal text-ink-faint">
+                        Moving &amp; logistics (estimate)
+                      </dt>
+                      <dd className="text-[14px] font-normal text-ink-soft">
+                        {money(result.firstYearMoveCost - result.offer.monthlyRent)}
+                      </dd>
+                    </div>
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
+                      <dt className="min-w-0 truncate text-[13px] font-normal text-ink-faint">
+                        Security deposit (1 mo. rent)
+                      </dt>
+                      <dd className="text-[14px] font-normal text-ink-soft">
+                        {money(result.offer.monthlyRent)}
+                      </dd>
+                    </div>
+                  </div>
+                  <div className="mt-1 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-ink/25 pt-2.5">
+                    <dt className="min-w-0 truncate text-sm font-bold text-ink">
+                      One-time move cost
+                    </dt>
+                    <dd className="font-display text-lg font-bold text-ink">
+                      {money(result.firstYearMoveCost)}
+                    </dd>
+                  </div>
+                </div>
                 <Row
                   label="Months to recoup that cost"
                   value={
