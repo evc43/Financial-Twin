@@ -1,7 +1,7 @@
 /**
  * relocationAdvisor.server.ts — turns the finished RelocationResult into
  * plain-language advice via Nemotron (OpenRouter, NVIDIA if that key exists).
- * Server-only. Independent of the cascade pipeline.
+ * Server-only. Server-only advisor.
  */
 
 import type { RelocationAdvice, RelocationResult } from "./relocation.types";

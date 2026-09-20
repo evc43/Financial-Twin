@@ -39,7 +39,8 @@ type FieldKey =
   | "offerSalary"
   | "offerRent";
 
-const CITY_OPTIONS = [...cityCostData]
+const CITY_OPTIONS = cityCostData
+  .filter((c) => c.verified)
   .map((c) => ({ city: c.city, state: c.state }))
   .sort((a, b) => a.city.localeCompare(b.city));
 
@@ -48,11 +49,11 @@ function stateForCity(city: string) {
 }
 
 const DEFAULTS: Record<FieldKey, string> = {
-  currentCity: "New York",
+  currentCity: CITY_OPTIONS[0]?.city ?? "",
   currentSalary: "120000",
   currentRent: "3200",
   monthlySpendingExRent: "1800",
-  offerCity: "Austin",
+  offerCity: (CITY_OPTIONS[1] ?? CITY_OPTIONS[0])?.city ?? "",
   offerSalary: "125000",
   offerRent: "",
 };
@@ -176,10 +177,10 @@ function Relocation() {
             </span>
           </div>
           <Link
-            to="/"
+            to="/relocation-demo"
             className="text-sm font-semibold text-ink-soft underline underline-offset-2 hover:text-ink"
           >
-            Cascades
+            Sample report
           </Link>
         </div>
 
