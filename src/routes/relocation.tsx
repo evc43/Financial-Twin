@@ -386,19 +386,23 @@ function Relocation() {
 
             <section className="rounded-[var(--radius)] bg-card p-6 sm:p-7">
               <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">
-                The move itself
+                What the move actually costs you
               </h2>
               <dl className="mt-3 divide-y divide-[var(--line-soft)]">
-                <Row label="Headline raise" value={money(result.raiseHeadline)} strong />
                 <Row
-                  label="Change in monthly surplus"
+                  label="Salary adjustment (on paper)"
+                  value={money(result.raiseHeadline)}
+                  strong
+                />
+                <Row
+                  label="What actually changes in your pocket each month"
                   value={`${result.surplusDelta >= 0 ? "+" : "−"}${money(Math.abs(result.surplusDelta))}`}
                   strong
                 />
                 <div className="py-1">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
                     <dt className="min-w-0 truncate text-sm font-bold text-ink">
-                      One-time move cost
+                      Money you spend once to get there
                     </dt>
                     <dd className="font-display text-lg font-bold text-ink">
                       {money(result.firstYearMoveCost)}
@@ -407,7 +411,7 @@ function Relocation() {
                   <div className="border-b border-[var(--line-soft)] pb-2 pl-4">
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
                       <dt className="min-w-0 truncate text-[13px] font-normal text-ink-faint">
-                        Moving &amp; logistics (estimate)
+                        Movers, truck, travel (rough estimate)
                       </dt>
                       <dd className="text-[14px] font-normal text-ink-soft">
                         {money(result.firstYearMoveCost - result.offer.monthlyRent)}
@@ -415,7 +419,7 @@ function Relocation() {
                     </div>
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
                       <dt className="min-w-0 truncate text-[13px] font-normal text-ink-faint">
-                        Security deposit (1 mo. rent)
+                        Deposit on the new place (one month&rsquo;s rent)
                       </dt>
                       <dd className="text-[14px] font-normal text-ink-soft">
                         {money(result.offer.monthlyRent)}
@@ -424,7 +428,7 @@ function Relocation() {
                   </div>
                 </div>
                 <Row
-                  label="Months to recoup that cost"
+                  label="How long until you're even"
                   value={
                     result.monthsToRecoup === null
                       ? "Never — the move loses money monthly"
@@ -435,12 +439,13 @@ function Relocation() {
               </dl>
               <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
                 {result.monthsToRecoup === null
-                  ? `The move costs about ${money(result.firstYearMoveCost)} up front, and you don't keep more each month — so it never pays that back.`
-                  : `The move costs about ${money(result.firstYearMoveCost)} up front, but the extra ${money(Math.abs(result.surplusDelta))} you keep each month pays that back in ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — after that it's pure gain.`}
+                  ? `Getting there costs about ${money(result.firstYearMoveCost)} once, and you keep less each month than you do today — so this move never pays itself back.`
+                  : `Getting there costs about ${money(result.firstYearMoveCost)} once. You keep ${money(Math.abs(result.surplusDelta))} more each month, so you're even after ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — everything after that is yours.`}
               </p>
               <p className="mt-2 text-xs leading-relaxed text-ink-faint">
-                The {money(result.firstYearMoveCost - result.offer.monthlyRent)} is a rough moving
-                estimate — adjust it for your real quote. The deposit is one month of your new rent.
+                The movers figure ({money(result.firstYearMoveCost - result.offer.monthlyRent)}) is a
+                rough guess — swap in your real quote. The deposit is just one month of your new
+                rent.
               </p>
             </section>
 
