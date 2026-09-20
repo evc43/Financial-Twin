@@ -40,6 +40,7 @@ export interface CascadeResult {
   observedFeeCount: number;
   observedFeeTotal: number;
   recurringMonthlyFee: number;
+  oneOffFeeTotal: number;
   projectionMonths: number;
   projectedFeeCost: number;
   recommendedNewRentDay: number | null;
@@ -101,6 +102,7 @@ export function detectCascade(
     observedFeeCount: 0,
     observedFeeTotal: 0,
     recurringMonthlyFee: 0,
+    oneOffFeeTotal: 0,
     projectionMonths,
     projectedFeeCost: 0,
     recommendedNewRentDay: null,
@@ -140,12 +142,18 @@ export function detectCascade(
   }
 
   let recurringMonthlyFee = 0;
+  let oneOffFeeTotal = 0;
   for (const [, rec] of byType) {
-    if (rec.months.size >= 1) {
+    if (rec.months.size >= 2) {
+      // Appears in 2+ distinct months — a genuinely recurring monthly fee.
       recurringMonthlyFee += median(rec.amounts);
+    } else {
+      // Single month only — a one-time cost, never projected forward.
+      oneOffFeeTotal += rec.amounts.reduce((s, a) => s + a, 0);
     }
   }
   recurringMonthlyFee = round2(recurringMonthlyFee);
+  oneOffFeeTotal = round2(oneOffFeeTotal);
 
   const feesAlreadyObserved = observedFeeCount > 0;
   const detected = rentLandsBeforePay && recurringMonthlyFee > 0;
@@ -160,8 +168,8 @@ export function detectCascade(
         { label: `Rent drafts ${gapDays}d before payday`, amount: model.rent.amount },
         { label: "Checking dips below $0" },
         { label: "Overdraft fee", amount: recurringMonthlyFee },
-        ...(observedFeeTotal > recurringMonthlyFee
-          ? [{ label: "Knock-on fees", amount: round2(observedFeeTotal - recurringMonthlyFee) }]
+        ...(oneOffFeeTotal > 0
+          ? [{ label: "One-time knock-on fee", amount: oneOffFeeTotal }]
           : []),
         { label: `${projectionMonths}-month impact`, amount: projectedFeeCost },
       ]
@@ -177,6 +185,7 @@ export function detectCascade(
     observedFeeCount,
     observedFeeTotal,
     recurringMonthlyFee,
+    oneOffFeeTotal,
     projectionMonths,
     projectedFeeCost,
     recommendedNewRentDay,
