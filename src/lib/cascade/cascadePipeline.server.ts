@@ -125,29 +125,51 @@ export async function pullDemoTransactions(inputs: CascadeInputs): Promise<Plaid
 
   await plaid("/transactions/refresh", { access_token: accessToken }).catch(() => {});
 
-  // Sandbox transaction generation is asynchronous: the first sync often returns
-  // only a partial first page. Re-sync from scratch until the count stops growing.
-  let added: any[] = [];
-  let stableRounds = 0;
-
-  for (let attempt = 0; attempt < 12; attempt++) {
+  // Sandbox transaction generation is asynchronous. Wait until the item reports a
+  // stable transaction total, then do a full paginated sync from scratch.
+  let expected = 0;
+  let stableTotals = 0;
+  for (let attempt = 0; attempt < 20; attempt++) {
     if (attempt) await sleep(2000);
+    const got = await plaid("/transactions/get", {
+      access_token: accessToken,
+      start_date: "2000-01-01",
+      end_date: new Date().toISOString().slice(0, 10),
+      options: { count: 1, offset: 0 },
+    }).catch(() => null);
+    const total = (got?.total_transactions as number | undefined) ?? 0;
+    if (total > expected) {
+      expected = total;
+      stableTotals = 0;
+      continue;
+    }
+    stableTotals++;
+    if (expected > 0 && stableTotals >= 2) break;
+  }
 
-    // Full sync from scratch: keep calling with next_cursor until has_more is false.
-    const page: any[] = [];
+  const syncAll = async (): Promise<any[]> => {
+    const all: any[] = [];
     let cursor: string | undefined;
-    let pages = 0;
-    while (pages < 100) {
+    for (let pages = 0; pages < 100; pages++) {
       const sync = await plaid("/transactions/sync", {
         access_token: accessToken,
         count: 500,
         ...(cursor ? { cursor } : {}),
       });
-      pages++;
-      page.push(...(sync.added ?? []));
-      cursor = sync.next_cursor;
+      all.push(...(sync.added ?? []));
+      cursor = sync.next_cursor as string | undefined;
       if (!sync.has_more) break;
     }
+    return all;
+  };
+
+  // Re-sync from scratch until no new transactions are added (and we have at
+  // least as many as the item reports).
+  let added: any[] = [];
+  let stableRounds = 0;
+  for (let attempt = 0; attempt < 15; attempt++) {
+    if (attempt) await sleep(2000);
+    const page = await syncAll();
 
     if (page.length > added.length) {
       added = page;
@@ -155,9 +177,10 @@ export async function pullDemoTransactions(inputs: CascadeInputs): Promise<Plaid
       continue; // still growing — sandbox is still generating
     }
 
-    // Require two consecutive rounds with no growth before trusting the count.
     stableRounds++;
-    if (added.length > 0 && stableRounds >= 2) break;
+    const enough = added.length > 0 && (expected === 0 || added.length >= expected);
+    if (enough && stableRounds >= 2) break;
+    if (added.length > 0 && stableRounds >= 5) break; // give up waiting for parity
   }
 
   return added.map((t) => ({
