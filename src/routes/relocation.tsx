@@ -195,12 +195,12 @@ function Relocation() {
         await analyze({
           data: {
             currentCity: values.currentCity.trim(),
-            currentState: values.currentState.trim(),
+            currentState: stateForCity(values.currentCity),
             currentSalary: Number(values.currentSalary) || 0,
             currentRent: Number(values.currentRent) || 0,
             monthlySpendingExRent: Number(values.monthlySpendingExRent) || 0,
             offerCity: values.offerCity.trim(),
-            offerState: values.offerState.trim(),
+            offerState: stateForCity(values.offerCity),
             offerSalary: Number(values.offerSalary) || 0,
             ...(offerRent ? { offerRent: Number(offerRent) || 0 } : {}),
           },
@@ -213,22 +213,39 @@ function Relocation() {
     }
   }
 
-  function field(f: (typeof CURRENT_FIELDS)[number]) {
+  function field(f: FieldDef) {
+    const state = f.select ? stateForCity(values[f.key]) : "";
     return (
       <label key={f.key} className="block min-w-0">
         <span className="text-sm font-medium text-ink-soft">{f.label}</span>
         <span className="mt-2 flex items-center gap-2 rounded-[var(--radius-sm)] border border-border bg-background px-4 py-3 focus-within:border-forest">
           {f.prefix && <span className="text-ink-faint">{f.prefix}</span>}
-          <input
-            type={f.text ? "text" : "number"}
-            min={f.text ? undefined : 0}
-            inputMode={f.text ? "text" : "numeric"}
-            value={values[f.key]}
-            onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
-            className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-hidden"
-          />
+          {f.select ? (
+            <select
+              value={values[f.key]}
+              onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-hidden"
+            >
+              {CITY_OPTIONS.map((c) => (
+                <option key={c.city} value={c.city}>
+                  {c.city}, {c.state}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={f.text ? "text" : "number"}
+              min={f.text ? undefined : 0}
+              inputMode={f.text ? "text" : "numeric"}
+              value={values[f.key]}
+              onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-hidden"
+            />
+          )}
         </span>
-        <span className="mt-1 block text-xs text-ink-faint">{f.hint}</span>
+        <span className="mt-1 block text-xs text-ink-faint">
+          {f.select && state ? `State: ${state}` : f.hint}
+        </span>
       </label>
     );
   }
