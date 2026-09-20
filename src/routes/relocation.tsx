@@ -270,7 +270,7 @@ function Relocation() {
               <img
                 src={incomeMapAsset.url}
                 alt="Map of the income needed to live comfortably in every U.S. state in 2026, ranging from $81K in West Virginia to $129K in Hawaii"
-                className="block w-full max-h-[450px] object-cover object-center rounded-[calc(var(--radius)-0.5rem)]"
+                className="block w-full max-h-[525px] object-cover object-center rounded-[calc(var(--radius)-0.5rem)]"
                 loading="lazy"
               />
             </section>
