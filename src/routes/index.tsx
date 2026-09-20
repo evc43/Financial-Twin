@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { runCascadeDemoFn } from "@/lib/cascade/cascade.functions";
 import type { CascadeDemoResponse, CascadeInputs } from "@/lib/cascade/cascade.types";
@@ -31,6 +31,62 @@ function money(n?: number) {
   if (n === undefined || n === null) return null;
   return `$${Math.round(n).toLocaleString()}`;
 }
+
+function ordinal(n: number) {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1:
+      return `${n}st`;
+    case 2:
+      return `${n}nd`;
+    case 3:
+      return `${n}rd`;
+    default:
+      return `${n}th`;
+  }
+}
+
+/** Cosmetic count-up: animates 0 → value, ending exactly on value. */
+function useCountUp(value: number, duration = 1000, delay = 0) {
+  const [display, setDisplay] = useState(0);
+  const raf = useRef<number | null>(null);
+
+  useEffect(() => {
+    let start: number | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    setDisplay(0);
+
+    const tick = (t: number) => {
+      if (start === null) start = t;
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      if (p >= 1) {
+        setDisplay(value);
+        return;
+      }
+      setDisplay(value * eased);
+      raf.current = requestAnimationFrame(tick);
+    };
+
+    timer = setTimeout(() => {
+      raf.current = requestAnimationFrame(tick);
+    }, delay);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (raf.current) cancelAnimationFrame(raf.current);
+    };
+  }, [value, duration, delay]);
+
+  return display;
+}
+
+function CountMoney({ value, delay = 0 }: { value: number; delay?: number }) {
+  const n = useCountUp(value, 1000, delay);
+  return <>{money(n)}</>;
+}
+
 
 function whyNoCascade(result: CascadeDemoResponse): { headline: string; reasons: string[] } {
   const c = result.cascade;
