@@ -128,14 +128,16 @@ export async function pullDemoTransactions(inputs: CascadeInputs): Promise<Plaid
   // Sandbox transaction generation is asynchronous: the first sync often returns
   // only a partial first page. Re-sync from scratch until the count stops growing.
   let added: any[] = [];
-  for (let attempt = 0; attempt < 8; attempt++) {
+  let stableRounds = 0;
+
+  for (let attempt = 0; attempt < 12; attempt++) {
     if (attempt) await sleep(2000);
 
+    // Full sync from scratch: keep calling with next_cursor until has_more is false.
     const page: any[] = [];
     let cursor: string | undefined;
     let pages = 0;
-    // Page through EVERY result: keep calling with next_cursor while has_more is true.
-    while (pages < 50) {
+    while (pages < 100) {
       const sync = await plaid("/transactions/sync", {
         access_token: accessToken,
         count: 500,
@@ -149,9 +151,13 @@ export async function pullDemoTransactions(inputs: CascadeInputs): Promise<Plaid
 
     if (page.length > added.length) {
       added = page;
-      continue; // still growing — sandbox may not have finished generating
+      stableRounds = 0;
+      continue; // still growing — sandbox is still generating
     }
-    if (added.length > 0) break;
+
+    // Require two consecutive rounds with no growth before trusting the count.
+    stableRounds++;
+    if (added.length > 0 && stableRounds >= 2) break;
   }
 
   return added.map((t) => ({
