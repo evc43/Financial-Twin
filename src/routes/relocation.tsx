@@ -70,20 +70,20 @@ type FieldDef = {
 
 const CURRENT_FIELDS: FieldDef[] = [
   { key: "currentCity", label: "Current city", hint: "Pick a supported city.", select: true },
-  { key: "currentSalary", label: "Current salary", hint: "Annual gross.", prefix: "$", placeholder: "120000" },
-  { key: "currentRent", label: "Current monthly rent", hint: "What housing costs you now.", prefix: "$", placeholder: "3200" },
+  { key: "currentSalary", label: "Current salary", hint: "Annual gross.", prefix: "$", placeholder: "Type here" },
+  { key: "currentRent", label: "Current monthly rent", hint: "What housing costs you now.", prefix: "$", placeholder: "Type here" },
   {
     key: "monthlySpendingExRent",
     label: "Monthly spending (excl. rent)",
     hint: "Groceries, transport, dining, utilities.",
     prefix: "$",
-    placeholder: "1800",
+    placeholder: "Type here",
   },
 ];
 
 const OFFER_FIELDS: FieldDef[] = [
   { key: "offerCity", label: "Offer city", hint: "Pick a supported city.", select: true },
-  { key: "offerSalary", label: "Offer salary", hint: "Annual gross.", prefix: "$", placeholder: "125000" },
+  { key: "offerSalary", label: "Offer salary", hint: "Annual gross.", prefix: "$", placeholder: "Type here" },
   { key: "offerRent", label: "Offer rent (optional)", hint: "Leave blank to estimate it.", prefix: "$", placeholder: "Estimated" },
 ];
 
