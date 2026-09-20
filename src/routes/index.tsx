@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { runCascadeDemoFn } from "@/lib/cascade/cascade.functions";
 import type { CascadeDemoResponse, CascadeInputs } from "@/lib/cascade/cascade.types";
@@ -31,6 +31,62 @@ function money(n?: number) {
   if (n === undefined || n === null) return null;
   return `$${Math.round(n).toLocaleString()}`;
 }
+
+function ordinal(n: number) {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1:
+      return `${n}st`;
+    case 2:
+      return `${n}nd`;
+    case 3:
+      return `${n}rd`;
+    default:
+      return `${n}th`;
+  }
+}
+
+/** Cosmetic count-up: animates 0 → value, ending exactly on value. */
+function useCountUp(value: number, duration = 1000, delay = 0) {
+  const [display, setDisplay] = useState(0);
+  const raf = useRef<number | null>(null);
+
+  useEffect(() => {
+    let start: number | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    setDisplay(0);
+
+    const tick = (t: number) => {
+      if (start === null) start = t;
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      if (p >= 1) {
+        setDisplay(value);
+        return;
+      }
+      setDisplay(value * eased);
+      raf.current = requestAnimationFrame(tick);
+    };
+
+    timer = setTimeout(() => {
+      raf.current = requestAnimationFrame(tick);
+    }, delay);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (raf.current) cancelAnimationFrame(raf.current);
+    };
+  }, [value, duration, delay]);
+
+  return display;
+}
+
+function CountMoney({ value, delay = 0 }: { value: number; delay?: number }) {
+  const n = useCountUp(value, 1000, delay);
+  return <>{money(n)}</>;
+}
+
 
 function whyNoCascade(result: CascadeDemoResponse): { headline: string; reasons: string[] } {
   const c = result.cascade;
@@ -355,15 +411,34 @@ function Cascades() {
               </h1>
             </div>
 
+            {result.explanation && (
+              <section className="rounded-[var(--radius)] bg-sage p-6 sm:p-7 animate-fade-in">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">
+                  What to do
+                </h2>
+                <p className="mt-2 font-display text-2xl font-bold leading-snug text-ink">
+                  {result.cascade.recommendedNewRentDay !== null
+                    ? `Move your rent to the ${ordinal(result.cascade.recommendedNewRentDay)} — save `
+                    : "Shift your rent date — save "}
+                  <CountMoney value={result.cascade.projectedSavings} />
+                  {` over ${result.cascade.projectionMonths} months.`}
+                </p>
+              </section>
+            )}
+
             {chain.length > 0 && (
               <div className="flex flex-wrap items-center gap-3">
                 {chain.map((step, i) => (
-                  <div key={i} className="flex items-center gap-3">
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 animate-fade-in"
+                    style={{ animationDelay: `${i * 180}ms`, animationFillMode: "backwards" }}
+                  >
                     <div className="rounded-[var(--radius-sm)] border border-border bg-card px-4 py-3">
                       <p className="text-sm font-medium text-ink-soft">{step.label}</p>
                       {step.amount !== undefined && (
                         <p className="mt-1 font-display text-xl font-bold text-ink">
-                          {money(step.amount)}
+                          <CountMoney value={step.amount} delay={i * 180} />
                         </p>
                       )}
                     </div>
@@ -389,6 +464,22 @@ function Cascades() {
                   <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                     {result.explanation.narrative}
                   </p>
+
+                  <ol className="mt-5 flex flex-wrap items-center gap-2 text-sm text-ink-soft">
+                    {chain.slice(0, 3).map((s, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-sage text-[11px] font-semibold text-forest">
+                          {i + 1}
+                        </span>
+                        <span>{s.label}</span>
+                        {i < Math.min(3, chain.length) - 1 && (
+                          <span aria-hidden className="text-ink-faint">
+                            →
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
                 </section>
 
                 <section className="rounded-[var(--radius)] bg-sage p-6 sm:p-7">
@@ -397,13 +488,14 @@ function Cascades() {
                   </h2>
                   <p className="mt-2 text-lg text-ink">{result.explanation.smallestFix}</p>
                   <p className="mt-3 font-display text-4xl font-bold text-ink">
-                    {money(result.cascade.projectedSavings)}{" "}
+                    <CountMoney value={result.cascade.projectedSavings} />{" "}
                     <span className="text-sm font-normal text-ink-soft">
                       saved over {result.cascade.projectionMonths} months
                     </span>
                   </p>
                 </section>
               </>
+
             ) : (
               <section className="rounded-[var(--radius)] bg-card p-6 sm:p-7">
                 <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">
