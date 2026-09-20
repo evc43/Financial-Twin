@@ -47,5 +47,5 @@ export interface RelocationAnalyzeInputs {
   offerCity: string;
   offerState: string;
   offerSalary: number;
-  offerRent?: number;
+  offerRent?: number | undefined;
 }
