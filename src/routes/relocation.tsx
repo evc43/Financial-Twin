@@ -377,6 +377,11 @@ function Relocation() {
                   strong
                 />
               </dl>
+              <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
+                {result.monthsToRecoup === null
+                  ? `The move costs about ${money(result.firstYearMoveCost)} up front, and you don't keep more each month — so it never pays that back.`
+                  : `The move costs about ${money(result.firstYearMoveCost)} up front, but the extra ${money(Math.abs(result.surplusDelta))} you keep each month pays that back in ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — after that it's pure gain.`}
+              </p>
             </section>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
