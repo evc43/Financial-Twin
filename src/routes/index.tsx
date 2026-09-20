@@ -427,27 +427,61 @@ function Cascades() {
             )}
 
             {chain.length > 0 && (
-              <div className="flex flex-wrap items-center gap-3">
-                {chain.map((step, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 animate-fade-in"
-                    style={{ animationDelay: `${i * 180}ms`, animationFillMode: "backwards" }}
+              <div>
+                <div className="relative">
+                  <span
+                    aria-hidden
+                    className="absolute left-[7px] top-2 bottom-2 w-px bg-border"
+                  />
+                  <ol className="space-y-3">
+                    {chain.slice(0, -1).map((step, i) => (
+                      <li
+                        key={i}
+                        className="relative animate-fade-in"
+                        style={{
+                          animationDelay: `${i * 200}ms`,
+                          animationFillMode: "backwards",
+                          paddingLeft: `${i * 28}px`,
+                        }}
+                      >
+                        <span
+                          aria-hidden
+                          className="absolute left-[3px] top-6 h-2.5 w-2.5 rounded-full bg-forest"
+                        />
+                        <div className="ml-7 flex items-center justify-between gap-4 rounded-[var(--radius-sm)] border border-border bg-card px-5 py-4">
+                          <p className="text-sm font-medium text-ink-soft">{step.label}</p>
+                          {step.amount !== undefined && (
+                            <p className="font-display text-xl font-bold text-ink">
+                              <CountMoney value={step.amount} delay={i * 200} />
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                {chain.slice(-1).map((last, i) => (
+                  <section
+                    key={`final-${i}`}
+                    className="mt-4 animate-fade-in rounded-[var(--radius)] bg-forest px-6 py-8 sm:px-8"
+                    style={{
+                      animationDelay: `${Math.max(0, chain.length - 1) * 200}ms`,
+                      animationFillMode: "backwards",
+                    }}
                   >
-                    <div className="rounded-[var(--radius-sm)] border border-border bg-card px-4 py-3">
-                      <p className="text-sm font-medium text-ink-soft">{step.label}</p>
-                      {step.amount !== undefined && (
-                        <p className="mt-1 font-display text-xl font-bold text-ink">
-                          <CountMoney value={step.amount} delay={i * 180} />
-                        </p>
-                      )}
-                    </div>
-                    {i < chain.length - 1 && (
-                      <span aria-hidden className="text-ink-faint">
-                        →
-                      </span>
+                    <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-cream-deep/70">
+                      {last.label}
+                    </h2>
+                    {last.amount !== undefined && (
+                      <p className="mt-2 font-display text-5xl font-bold tracking-tight text-cream-deep sm:text-6xl">
+                        <CountMoney
+                          value={last.amount}
+                          delay={Math.max(0, chain.length - 1) * 200}
+                        />
+                      </p>
                     )}
-                  </div>
+                  </section>
                 ))}
               </div>
             )}
