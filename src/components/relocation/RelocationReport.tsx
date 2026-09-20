@@ -218,7 +218,7 @@ function CityCard({
         Taxes (annual)
       </p>
       <div className="mt-3">
-        <TaxBar bd={bd} />
+        <TaxPie bd={bd} />
       </div>
 
       <dl className="mt-4 divide-y divide-[var(--line-soft)]">
