@@ -214,7 +214,7 @@ function Relocation() {
           </Link>
         </div>
 
-        {!result && (
+        {!result && !loading && (
           <>
             <p className="mt-10 text-sm font-semibold text-forest">Relocation</p>
             <h1 className="mt-3 font-display text-4xl font-bold leading-[1.05] tracking-tight text-ink sm:text-5xl">
@@ -242,11 +242,6 @@ function Relocation() {
             )}
 
             <div className="mt-6 flex flex-wrap items-center justify-end gap-4">
-              {loading && (
-                <p className="text-sm text-ink-soft" aria-live="polite">
-                  Running both cities through every tax layer — this takes a few seconds.
-                </p>
-              )}
               <button
                 type="button"
                 disabled={loading}
@@ -257,6 +252,27 @@ function Relocation() {
               </button>
             </div>
           </>
+        )}
+
+        {!result && loading && (
+          <section
+            className="mt-10 flex min-h-[28rem] flex-col items-center justify-center rounded-[var(--radius)] bg-card px-6 py-12 text-center"
+            aria-live="polite"
+            aria-busy="true"
+          >
+            <span className="relative flex h-16 w-16 items-center justify-center" aria-hidden>
+              <span className="absolute inset-0 animate-ping rounded-full bg-sage-deep opacity-40" />
+              <span className="relative h-9 w-9 animate-pulse rounded-full bg-forest" />
+            </span>
+            <p className="mt-8 text-sm font-semibold text-forest">Comparing your move</p>
+            <h1 className="mt-3 max-w-lg font-display text-3xl font-bold leading-tight text-ink sm:text-4xl">
+              Running both cities through every tax layer
+            </h1>
+            <p className="mt-3 max-w-md text-[15px] leading-relaxed text-ink-soft">
+              We’re calculating taxes, housing, local costs and your real monthly surplus. This
+              takes a few seconds.
+            </p>
+          </section>
         )}
 
         {result && (
