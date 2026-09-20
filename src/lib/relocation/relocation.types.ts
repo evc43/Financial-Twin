@@ -42,8 +42,22 @@ export interface RelocationResult {
   offerClearsBreakEvenBy: number | null; // offer.gross - breakEven
   firstYearMoveCost: number; // one-time cost of moving
   monthsToRecoup: number | null; // how long until the move pays for itself
-  verdict: "clear_win" | "marginal" | "worse";
+  verdict: RelocationVerdict;
 }
+
+export type RelocationVerdict =
+  | "clear_win"
+  | "marginal"
+  | "break_even"
+  | "worse"
+  | "loss";
+
+/**
+ * Presentation payload for the relocation report view. Structurally the same as
+ * RelocationResult, so any analyzer output (or an external JSON payload of this
+ * shape) can be handed straight to the report component as a prop.
+ */
+export type RelocationReportData = RelocationResult;
 
 export interface RelocationAnalyzeInputs {
   currentCity: string;
