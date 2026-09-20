@@ -99,18 +99,20 @@ function Row({
   strong,
   emphasis,
   note,
+  accent,
 }: {
   label: string;
   value: string;
   strong?: boolean;
   emphasis?: boolean;
   note?: string;
+  accent?: boolean;
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2">
       <dt
         className={
-          emphasis
+          emphasis || accent
             ? "min-w-0 truncate text-sm font-bold text-ink"
             : "min-w-0 truncate text-sm text-ink-soft"
         }
@@ -119,11 +121,13 @@ function Row({
       </dt>
       <dd
         className={
-          strong
-            ? "font-display text-lg font-bold text-ink"
-            : emphasis
-              ? "text-[15px] font-bold text-ink"
-              : "text-[15px] font-medium text-ink"
+          accent
+            ? "font-display text-xl font-bold text-[var(--forest)]"
+            : strong
+              ? "font-display text-lg font-bold text-ink"
+              : emphasis
+                ? "text-[15px] font-bold text-ink"
+                : "text-[15px] font-medium text-ink"
         }
       >
         {value}
@@ -397,7 +401,7 @@ function Relocation() {
                 <Row
                   label="What actually changes in your pocket each month"
                   value={`${result.surplusDelta >= 0 ? "+" : "−"}${money(Math.abs(result.surplusDelta))}`}
-                  strong
+                  accent
                 />
                 <div className="py-1">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
@@ -437,15 +441,14 @@ function Relocation() {
                   strong
                 />
               </dl>
-              <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
+              <p className="mt-3 text-[15px] font-medium leading-relaxed text-ink">
                 {result.monthsToRecoup === null
-                  ? `Getting there costs about ${money(result.firstYearMoveCost)} once, and you keep less each month than you do today — so this move never pays itself back.`
-                  : `Getting there costs about ${money(result.firstYearMoveCost)} once. You keep ${money(Math.abs(result.surplusDelta))} more each month, so you're even after ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — everything after that is yours.`}
+                  ? "Never breaks even — you keep less each month than you do today."
+                  : `Even after ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — then you keep +${money(Math.abs(result.surplusDelta))} every month.`}
               </p>
               <p className="mt-2 text-xs leading-relaxed text-ink-faint">
-                The movers figure ({money(result.firstYearMoveCost - result.offer.monthlyRent)}) is a
-                rough guess — swap in your real quote. The deposit is just one month of your new
-                rent.
+                Movers is a rough {money(result.firstYearMoveCost - result.offer.monthlyRent)}{" "}
+                estimate — swap in your real quote.
               </p>
             </section>
 
