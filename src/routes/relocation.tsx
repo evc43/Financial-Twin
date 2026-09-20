@@ -441,15 +441,14 @@ function Relocation() {
                   strong
                 />
               </dl>
-              <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
+              <p className="mt-3 text-[15px] font-medium leading-relaxed text-ink">
                 {result.monthsToRecoup === null
-                  ? `Getting there costs about ${money(result.firstYearMoveCost)} once, and you keep less each month than you do today — so this move never pays itself back.`
-                  : `Getting there costs about ${money(result.firstYearMoveCost)} once. You keep ${money(Math.abs(result.surplusDelta))} more each month, so you're even after ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — everything after that is yours.`}
+                  ? "Never breaks even — you keep less each month than you do today."
+                  : `Even after ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — then you keep +${money(Math.abs(result.surplusDelta))} every month.`}
               </p>
               <p className="mt-2 text-xs leading-relaxed text-ink-faint">
-                The movers figure ({money(result.firstYearMoveCost - result.offer.monthlyRent)}) is a
-                rough guess — swap in your real quote. The deposit is just one month of your new
-                rent.
+                Movers is a rough {money(result.firstYearMoveCost - result.offer.monthlyRent)}{" "}
+                estimate — swap in your real quote.
               </p>
             </section>
 
