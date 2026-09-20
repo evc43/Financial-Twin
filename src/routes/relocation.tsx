@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
+import { RelocationReport } from "@/components/relocation/RelocationReport";
 import { cityCostData, getCityCost } from "@/lib/relocation/costOfLivingData";
 import { relocationAnalyzeFn } from "@/lib/relocation/relocation.functions";
 import type { RelocationResult } from "@/lib/relocation/relocation.types";
@@ -28,10 +29,6 @@ export const Route = createFileRoute("/relocation")({
   component: Relocation,
 });
 
-function money(n: number | null | undefined) {
-  if (n === undefined || n === null) return "—";
-  return `$${Math.round(n).toLocaleString()}`;
-}
 
 type FieldKey =
   | "currentCity"
@@ -87,100 +84,6 @@ const OFFER_FIELDS: FieldDef[] = [
   { key: "offerRent", label: "Offer rent (optional)", hint: "Leave blank to estimate it.", prefix: "$" },
 ];
 
-const VERDICT: Record<RelocationResult["verdict"], { label: string; blurb: string }> = {
-  clear_win: { label: "Clear win", blurb: "You keep meaningfully more every month after everything." },
-  marginal: { label: "Marginal", blurb: "Close to a wash — the money barely moves either way." },
-  worse: { label: "Worse", blurb: "Despite the headline number, you'd keep less each month." },
-};
-
-function Row({
-  label,
-  value,
-  strong,
-  emphasis,
-  note,
-  accent,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-  emphasis?: boolean;
-  note?: string;
-  accent?: boolean;
-}) {
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2">
-      <dt
-        className={
-          emphasis || accent
-            ? "min-w-0 truncate text-sm font-bold text-ink"
-            : "min-w-0 truncate text-sm text-ink-soft"
-        }
-      >
-        {label}
-      </dt>
-      <dd
-        className={
-          accent
-            ? "font-display text-xl font-bold text-[var(--forest)]"
-            : strong
-              ? "font-display text-lg font-bold text-ink"
-              : emphasis
-                ? "text-[15px] font-bold text-ink"
-                : "text-[15px] font-medium text-ink"
-        }
-      >
-        {value}
-        {note && <span className="ml-1.5 text-xs font-medium text-ink-faint">{note}</span>}
-      </dd>
-    </div>
-  );
-}
-
-function SurplusCard({
-  title,
-  bd,
-  accent,
-}: {
-  title: string;
-  bd: RelocationResult["current"];
-  accent?: boolean;
-}) {
-  return (
-    <section
-      className={`rounded-[var(--radius)] p-6 ${accent ? "bg-sage" : "bg-card"}`}
-    >
-      <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">{title}</h3>
-      <p className="mt-1 font-display text-lg font-semibold text-ink">
-        {bd.city}, {bd.state}
-      </p>
-      <p className="mt-4 font-display text-4xl font-bold tracking-tight text-ink">
-        {money(bd.monthlySurplus)}
-      </p>
-      <p className="mt-1 text-xs text-ink-faint">left over each month</p>
-      <dl className="mt-4 divide-y divide-[var(--line-soft)]">
-        <Row label="Gross salary" value={money(bd.grossSalary)} />
-        <Row label="Federal tax" value={money(bd.federalTax)} />
-        <Row label="FICA" value={money(bd.fica)} />
-        <Row
-          label="State tax"
-          value={money(bd.stateTax)}
-          emphasis
-          {...(Math.round(bd.stateTax) === 0 ? { note: "— none here" } : {})}
-        />
-        <Row
-          label="City tax"
-          value={money(bd.localTax)}
-          emphasis
-          {...(Math.round(bd.localTax) === 0 ? { note: "— none here" } : {})}
-        />
-        <Row label="Net per month" value={money(bd.netMonthly)} strong />
-        <Row label="Rent" value={money(bd.monthlyRent)} />
-        <Row label="Other spending" value={money(bd.monthlyNonRent)} />
-      </dl>
-    </section>
-  );
-}
 
 function Relocation() {
   const analyze = useServerFn(relocationAnalyzeFn);
@@ -343,114 +246,7 @@ function Relocation() {
 
         {result && (
           <div className="mt-10 space-y-8">
-            <div>
-              <p className="text-sm font-semibold text-forest">Relocation verdict</p>
-              <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-ink">
-                {VERDICT[result.verdict].label}
-              </h1>
-              <p className="mt-2 text-[15px] text-ink-soft">{VERDICT[result.verdict].blurb}</p>
-            </div>
-
-            {result.advice && (
-              <section className="rounded-[var(--radius)] bg-card p-6 sm:p-7">
-                <h2 className="font-display text-2xl font-bold leading-snug text-ink">
-                  {result.advice.headline}
-                </h2>
-                <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
-                  {result.advice.reasoning}
-                </p>
-                {result.advice.recommendation && (
-                  <p className="mt-4 inline-flex rounded-full bg-sage px-4 py-2 text-sm font-semibold text-ink">
-                    {result.advice.recommendation}
-                  </p>
-                )}
-              </section>
-            )}
-
-            <section className="rounded-[var(--radius)] bg-forest px-6 py-8 sm:px-8">
-              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white">
-                Break-even salary in {result.offer.city}
-              </h2>
-              <p className="mt-2 font-display text-5xl font-bold tracking-tight text-cream-deep sm:text-6xl">
-                {money(result.breakEvenSalary)}
-              </p>
-              <p className="mt-2 text-sm font-semibold text-white">
-                {result.offerClearsBreakEvenBy === null
-                  ? "We couldn't solve a break-even salary for this pair of cities."
-                  : result.offerClearsBreakEvenBy >= 0
-                    ? `Your ${money(result.offer.grossSalary)} offer clears it by ${money(result.offerClearsBreakEvenBy)}.`
-                    : `Your ${money(result.offer.grossSalary)} offer falls short by ${money(Math.abs(result.offerClearsBreakEvenBy))}.`}
-              </p>
-            </section>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <SurplusCard title="Today" bd={result.current} />
-              <SurplusCard title="After the move" bd={result.offer} accent />
-            </div>
-
-            <section className="rounded-[var(--radius)] bg-card p-6 sm:p-7">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">
-                What the move actually costs you
-              </h2>
-              <dl className="mt-3 divide-y divide-[var(--line-soft)]">
-                <Row
-                  label="Salary adjustment (on paper)"
-                  value={money(result.raiseHeadline)}
-                  strong
-                />
-                <Row
-                  label="What actually changes in your pocket each month"
-                  value={`${result.surplusDelta >= 0 ? "+" : "−"}${money(Math.abs(result.surplusDelta))}`}
-                  accent
-                />
-                <div className="py-1">
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
-                    <dt className="min-w-0 truncate text-sm font-bold text-ink">
-                      Money you spend once to get there
-                    </dt>
-                    <dd className="font-display text-lg font-bold text-ink">
-                      {money(result.firstYearMoveCost)}
-                    </dd>
-                  </div>
-                  <div className="border-b border-[var(--line-soft)] pb-2 pl-4">
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
-                      <dt className="min-w-0 truncate text-[13px] font-normal text-ink-faint">
-                        Movers, truck, travel (rough estimate)
-                      </dt>
-                      <dd className="text-[14px] font-normal text-ink-soft">
-                        {money(result.firstYearMoveCost - result.offer.monthlyRent)}
-                      </dd>
-                    </div>
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
-                      <dt className="min-w-0 truncate text-[13px] font-normal text-ink-faint">
-                        Deposit on the new place (one month&rsquo;s rent)
-                      </dt>
-                      <dd className="text-[14px] font-normal text-ink-soft">
-                        {money(result.offer.monthlyRent)}
-                      </dd>
-                    </div>
-                  </div>
-                </div>
-                <Row
-                  label="How long until you're even"
-                  value={
-                    result.monthsToRecoup === null
-                      ? "Never — the move loses money monthly"
-                      : `${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"}`
-                  }
-                  strong
-                />
-              </dl>
-              <p className="mt-3 text-[15px] font-medium leading-relaxed text-ink">
-                {result.monthsToRecoup === null
-                  ? "Never breaks even — you keep less each month than you do today."
-                  : `Even after ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — then you keep +${money(Math.abs(result.surplusDelta))} every month.`}
-              </p>
-              <p className="mt-2 text-xs leading-relaxed text-ink-faint">
-                Movers is a rough {money(result.firstYearMoveCost - result.offer.monthlyRent)}{" "}
-                estimate — swap in your real quote.
-              </p>
-            </section>
+            <RelocationReport data={result} />
 
 
             <div className="flex flex-wrap items-center justify-between gap-3">
