@@ -335,13 +335,13 @@ function Relocation() {
             )}
 
             <section className="rounded-[var(--radius)] bg-forest px-6 py-8 sm:px-8">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-cream-deep/70">
+              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white">
                 Break-even salary in {result.offer.city}
               </h2>
               <p className="mt-2 font-display text-5xl font-bold tracking-tight text-cream-deep sm:text-6xl">
                 {money(result.breakEvenSalary)}
               </p>
-              <p className="mt-3 text-sm text-cream-deep/80">
+              <p className="mt-2 text-sm font-semibold text-white">
                 {result.offerClearsBreakEvenBy === null
                   ? "We couldn't solve a break-even salary for this pair of cities."
                   : result.offerClearsBreakEvenBy >= 0
