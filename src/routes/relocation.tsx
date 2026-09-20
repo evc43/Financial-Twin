@@ -401,7 +401,7 @@ function Relocation() {
                 <Row
                   label="What actually changes in your pocket each month"
                   value={`${result.surplusDelta >= 0 ? "+" : "−"}${money(Math.abs(result.surplusDelta))}`}
-                  strong
+                  accent
                 />
                 <div className="py-1">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-1.5">
