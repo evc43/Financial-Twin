@@ -176,29 +176,59 @@ async function callNemotron(
   temperature: number,
 ): Promise<string> {
   const { url, key, nvidia } = modelEndpoint();
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model: NEMOTRON_MODEL,
-      messages: [
-        { role: "system", content: `/no_think\n${systemPrompt}` },
-        { role: "user", content: userContent },
-      ],
-      temperature,
-      top_p: 0.95,
-      max_tokens: maxTokens,
-      ...(nvidia
-        ? { chat_template_kwargs: { enable_thinking: false } }
-        : { reasoning: { enabled: false } }),
-    }),
+  const body = JSON.stringify({
+    model: NEMOTRON_MODEL,
+    messages: [
+      { role: "system", content: `/no_think\n${systemPrompt}` },
+      { role: "user", content: userContent },
+    ],
+    temperature,
+    top_p: 0.95,
+    max_tokens: maxTokens,
+    ...(nvidia
+      ? { chat_template_kwargs: { enable_thinking: false } }
+      : { reasoning: { enabled: false } }),
   });
-  if (!res.ok) throw new Error(`Nemotron failed: ${res.status} ${await res.text()}`);
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? "";
+
+  const MAX_ATTEMPTS = 5;
+  let lastStatus = 0;
+  let lastText = "";
+
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body,
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content ?? "";
+    }
+
+    lastStatus = res.status;
+    lastText = await res.text();
+
+    // Only 429 (rate limit) and 5xx are worth retrying; everything else is terminal.
+    const retryable = res.status === 429 || res.status >= 500;
+    if (!retryable || attempt === MAX_ATTEMPTS - 1) break;
+
+    const retryAfter = Number(res.headers.get("retry-after"));
+    const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+      ? Math.min(retryAfter * 1000, 15000)
+      : Math.min(1500 * 2 ** attempt, 12000) + Math.floor(Math.random() * 500);
+    await sleep(waitMs);
+  }
+
+  if (lastStatus === 429) {
+    throw new Error(
+      "The analysis model is rate-limited upstream right now. Wait a moment and press Detect Cascade again.",
+    );
+  }
+  throw new Error(`Nemotron failed: ${lastStatus} ${lastText}`);
 }
 
 function parseJson<T>(raw: string): T {
