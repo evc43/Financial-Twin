@@ -32,6 +32,50 @@ function money(n?: number) {
   return `$${Math.round(n).toLocaleString()}`;
 }
 
+function whyNoCascade(result: CascadeDemoResponse): { headline: string; reasons: string[] } {
+  const c = result.cascade;
+  const reasons: string[] = [];
+  let headline = "Your money lands before your big bills leave.";
+
+  if (!result.model.income) {
+    headline = "We couldn't spot a recurring paycheck.";
+    reasons.push("No repeating deposit was found in the history, so there's no payday to compare against.");
+  } else {
+    reasons.push(`Paycheck lands on day ${c.payDay} of the month.`);
+  }
+
+  if (!result.model.rent) {
+    headline = "We couldn't spot a recurring rent or mortgage payment.";
+    reasons.push("No repeating large housing payment was found in the history.");
+  } else {
+    reasons.push(`Rent leaves on day ${c.rentDay} of the month.`);
+  }
+
+  if (result.model.income && result.model.rent && !c.rentLandsBeforePay) {
+    headline = "Your rent isn't landing in the danger window before payday.";
+    reasons.push(
+      c.gapDays !== null && c.gapDays > 7
+        ? `Rent clears about ${c.gapDays} days before the next paycheck — far enough out that the balance recovers first.`
+        : "Rent clears on or after payday, so the money is already in the account when it leaves.",
+    );
+  }
+
+  if (c.observedFeeCount === 0) {
+    reasons.push("No overdraft, NSF or returned-payment fees appear in this history.");
+  } else if (c.recurringMonthlyFee === 0) {
+    reasons.push(
+      `${c.observedFeeCount} fee${c.observedFeeCount > 1 ? "s" : ""} totalling ${money(
+        c.oneOffFeeTotal || c.observedFeeTotal,
+      )} showed up, but only in a single month — that's a one-off, not a repeating pattern.`,
+    );
+    if (result.model.income && result.model.rent && c.rentLandsBeforePay) {
+      headline = "The fees here were one-offs, not a monthly pattern.";
+    }
+  }
+
+  return { headline, reasons };
+}
+
 type Field = keyof CascadeInputs;
 
 const FIELDS: { key: Field; label: string; hint: string; prefix?: string; max?: number }[] = [
