@@ -366,7 +366,15 @@ function Relocation() {
                   value={`${result.surplusDelta >= 0 ? "+" : "−"}${money(Math.abs(result.surplusDelta))}`}
                   strong
                 />
-                <Row label="First-year cost of moving" value={money(result.firstYearMoveCost)} strong />
+                <Row
+                  label="Moving & logistics (estimate)"
+                  value={money(result.firstYearMoveCost - result.offer.monthlyRent)}
+                />
+                <Row
+                  label="Security deposit (1 mo. rent)"
+                  value={money(result.offer.monthlyRent)}
+                />
+                <Row label="One-time move cost" value={money(result.firstYearMoveCost)} strong />
                 <Row
                   label="Months to recoup that cost"
                   value={
