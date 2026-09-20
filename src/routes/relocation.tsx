@@ -266,18 +266,11 @@ function Relocation() {
           <div className="mt-10 space-y-8">
             <RelocationReport data={result} />
 
-            <section className="overflow-hidden rounded-[var(--radius)] bg-card p-5 shadow-[0_1px_2px_rgba(18,24,20,0.04),0_10px_30px_-18px_rgba(18,24,20,0.25)] sm:p-6">
-              <h2 className="font-display text-lg font-bold text-ink">
-                For context: what &ldquo;comfortable&rdquo; costs by state
-              </h2>
-              <p className="mt-1 text-[13px] text-ink-soft">
-                Income needed for a single working adult, 2026. Source: SmartAsset via Visual
-                Capitalist.
-              </p>
+            <section className="overflow-hidden rounded-[var(--radius)] bg-card p-4 shadow-[0_1px_2px_rgba(18,24,20,0.04),0_10px_30px_-18px_rgba(18,24,20,0.25)]">
               <img
                 src={incomeMapAsset.url}
                 alt="Map of the income needed to live comfortably in every U.S. state in 2026, ranging from $81K in West Virginia to $129K in Hawaii"
-                className="mt-4 w-full rounded-[calc(var(--radius)-0.5rem)]"
+                className="mx-auto w-full max-w-[420px] rounded-[calc(var(--radius)-0.5rem)]"
                 loading="lazy"
               />
             </section>
