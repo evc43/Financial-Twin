@@ -141,7 +141,7 @@ export function detectCascade(
 
   let recurringMonthlyFee = 0;
   for (const [, rec] of byType) {
-    if (rec.months.size >= 2) {
+    if (rec.months.size >= 1) {
       recurringMonthlyFee += median(rec.amounts);
     }
   }
