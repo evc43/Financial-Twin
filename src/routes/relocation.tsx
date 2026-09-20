@@ -29,10 +29,6 @@ export const Route = createFileRoute("/relocation")({
   component: Relocation,
 });
 
-function money(n: number | null | undefined) {
-  if (n === undefined || n === null) return "—";
-  return `$${Math.round(n).toLocaleString()}`;
-}
 
 type FieldKey =
   | "currentCity"
