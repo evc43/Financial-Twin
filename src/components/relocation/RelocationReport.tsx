@@ -268,7 +268,9 @@ export function RelocationReport({ data }: { data: RelocationReportData }) {
         {data.advice && (
           <>
             <h1 className="mt-5 font-display text-3xl font-bold leading-snug tracking-tight text-ink sm:text-4xl">
-              {data.advice.headline}
+              {period === "annual"
+                ? `The ${currency(data.raiseHeadline)} salary change ${up ? "leaves you" : "costs you"} ${currency(Math.abs(data.surplusDelta * 12))} ${up ? "extra" : "less"} a year after taxes and cost of living.`
+                : data.advice.headline}
             </h1>
             {data.advice.recommendation && (
               <p className="mt-4 text-[15px] font-semibold text-ink-soft">
