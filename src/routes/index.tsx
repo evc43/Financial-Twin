@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 
@@ -220,18 +220,27 @@ function Cascades() {
   return (
     <main className="min-h-screen bg-background px-6 py-14 sm:px-10">
       <div className="mx-auto max-w-3xl">
-        <div className="flex items-center gap-3">
-          <span
-            aria-hidden
-            className="h-6 w-6 rounded-full"
-            style={{
-              background:
-                "conic-gradient(from 220deg, var(--forest) 0 55%, var(--sage-deep) 55% 100%)",
-              boxShadow: "inset 0 0 0 4px var(--background)",
-            }}
-          />
-          <span className="text-[17px] font-semibold tracking-tight text-ink">Financial Twin</span>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="h-6 w-6 rounded-full"
+              style={{
+                background:
+                  "conic-gradient(from 220deg, var(--forest) 0 55%, var(--sage-deep) 55% 100%)",
+                boxShadow: "inset 0 0 0 4px var(--background)",
+              }}
+            />
+            <span className="text-[17px] font-semibold tracking-tight text-ink">Financial Twin</span>
+          </div>
+          <Link
+            to="/relocation"
+            className="text-sm font-semibold text-ink-soft underline underline-offset-2 hover:text-ink"
+          >
+            Relocation
+          </Link>
         </div>
+
 
         {!result && !loading && (
           <>
