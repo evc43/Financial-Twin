@@ -48,12 +48,12 @@ function stateForCity(city: string) {
 }
 
 const DEFAULTS: Record<FieldKey, string> = {
-  currentCity: CITY_OPTIONS[0]?.city ?? "",
-  currentSalary: "120000",
-  currentRent: "3200",
-  monthlySpendingExRent: "1800",
-  offerCity: (CITY_OPTIONS[1] ?? CITY_OPTIONS[0])?.city ?? "",
-  offerSalary: "125000",
+  currentCity: "",
+  currentSalary: "",
+  currentRent: "",
+  monthlySpendingExRent: "",
+  offerCity: "",
+  offerSalary: "",
   offerRent: "",
 };
 
@@ -64,24 +64,26 @@ type FieldDef = {
   prefix?: string;
   text?: boolean;
   select?: boolean;
+  placeholder?: string;
 };
 
 const CURRENT_FIELDS: FieldDef[] = [
   { key: "currentCity", label: "Current city", hint: "Pick a supported city.", select: true },
-  { key: "currentSalary", label: "Current salary", hint: "Annual gross.", prefix: "$" },
-  { key: "currentRent", label: "Current monthly rent", hint: "What housing costs you now.", prefix: "$" },
+  { key: "currentSalary", label: "Current salary", hint: "Annual gross.", prefix: "$", placeholder: "120000" },
+  { key: "currentRent", label: "Current monthly rent", hint: "What housing costs you now.", prefix: "$", placeholder: "3200" },
   {
     key: "monthlySpendingExRent",
     label: "Monthly spending (excl. rent)",
     hint: "Groceries, transport, dining, utilities.",
     prefix: "$",
+    placeholder: "1800",
   },
 ];
 
 const OFFER_FIELDS: FieldDef[] = [
   { key: "offerCity", label: "Offer city", hint: "Pick a supported city.", select: true },
-  { key: "offerSalary", label: "Offer salary", hint: "Annual gross.", prefix: "$" },
-  { key: "offerRent", label: "Offer rent (optional)", hint: "Leave blank to estimate it.", prefix: "$" },
+  { key: "offerSalary", label: "Offer salary", hint: "Annual gross.", prefix: "$", placeholder: "125000" },
+  { key: "offerRent", label: "Offer rent (optional)", hint: "Leave blank to estimate it.", prefix: "$", placeholder: "Estimated" },
 ];
 
 
@@ -92,6 +94,17 @@ function Relocation() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RelocationResult | null>(null);
   const [showDebug, setShowDebug] = useState(false);
+
+  const canSubmit = (
+    [
+      "currentCity",
+      "offerCity",
+      "currentSalary",
+      "currentRent",
+      "monthlySpendingExRent",
+      "offerSalary",
+    ] as FieldKey[]
+  ).every((k) => values[k].trim() !== "");
 
   async function onSubmit() {
     setLoading(true);
@@ -133,6 +146,9 @@ function Relocation() {
               onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
               className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-hidden"
             >
+              <option value="" disabled>
+                Select a city
+              </option>
               {CITY_OPTIONS.map((c) => (
                 <option key={c.city} value={c.city}>
                   {c.city}, {c.state}
@@ -144,6 +160,7 @@ function Relocation() {
               type={f.text ? "text" : "number"}
               min={f.text ? undefined : 0}
               inputMode={f.text ? "text" : "numeric"}
+              placeholder={f.placeholder}
               value={values[f.key]}
               onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
               className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-hidden"
@@ -213,7 +230,7 @@ function Relocation() {
             <div className="mt-6 flex flex-wrap items-center justify-end gap-4">
               <button
                 type="button"
-                disabled={loading}
+                disabled={loading || !canSubmit}
                 onClick={onSubmit}
                 className="rounded-full bg-forest px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-forest-hover disabled:opacity-60"
               >
