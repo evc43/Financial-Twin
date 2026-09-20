@@ -40,7 +40,7 @@ const BADGE: Record<"good" | "warn" | "bad", string> = {
   bad: "bg-destructive text-destructive-foreground",
 };
 
-const TAX_COLORS = ["var(--ink)", "var(--ink-soft)", "var(--forest)", "var(--amber-text)"];
+const TAX_COLORS = ["var(--ink)", "var(--forest)", "var(--amber-text)", "var(--destructive)"];
 
 function TaxPie({ bd }: { bd: LocationBreakdown }) {
   const [active, setActive] = useState<number | null>(null);
@@ -69,7 +69,8 @@ function TaxPie({ bd }: { bd: LocationBreakdown }) {
 
   return (
     <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
-      <div className="relative shrink-0">
+      <div className="shrink-0">
+        <div className="relative">
         <svg
           viewBox="0 0 140 140"
           className="h-[140px] w-[140px] -rotate-90"
@@ -95,18 +96,27 @@ function TaxPie({ bd }: { bd: LocationBreakdown }) {
             />
           ))}
         </svg>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-faint">
-            {shown ? shown.label : "Total"}
-          </span>
-          <span className="font-display text-[15px] font-bold leading-tight text-ink">
-            {currency(shown ? shown.value : total)}
-          </span>
-          {shown && total > 0 && (
-            <span className="text-[10px] font-semibold text-ink-faint">
-              {Math.round((shown.value / safeTotal) * 100)}%
-            </span>
+          {shown && (
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-faint">
+                {shown.label}
+              </span>
+              <span className="font-display text-[15px] font-bold leading-tight text-ink">
+                {currency(shown.value)}
+              </span>
+              {total > 0 && (
+                <span className="text-[10px] font-semibold text-ink-faint">
+                  {Math.round((shown.value / safeTotal) * 100)}%
+                </span>
+              )}
+            </div>
           )}
+        </div>
+        <div className="mt-2 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-faint">
+            Total taxes (annual)
+          </p>
+          <p className="font-display text-base font-bold text-ink">{currency(total)}</p>
         </div>
       </div>
 
