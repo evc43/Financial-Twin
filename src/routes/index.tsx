@@ -411,15 +411,34 @@ function Cascades() {
               </h1>
             </div>
 
+            {result.explanation && (
+              <section className="rounded-[var(--radius)] bg-sage p-6 sm:p-7 animate-fade-in">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">
+                  What to do
+                </h2>
+                <p className="mt-2 font-display text-2xl font-bold leading-snug text-ink">
+                  {result.cascade.recommendedNewRentDay !== null
+                    ? `Move your rent to the ${ordinal(result.cascade.recommendedNewRentDay)} — save `
+                    : "Shift your rent date — save "}
+                  <CountMoney value={result.cascade.projectedSavings} />
+                  {` over ${result.cascade.projectionMonths} months.`}
+                </p>
+              </section>
+            )}
+
             {chain.length > 0 && (
               <div className="flex flex-wrap items-center gap-3">
                 {chain.map((step, i) => (
-                  <div key={i} className="flex items-center gap-3">
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 animate-fade-in"
+                    style={{ animationDelay: `${i * 180}ms`, animationFillMode: "backwards" }}
+                  >
                     <div className="rounded-[var(--radius-sm)] border border-border bg-card px-4 py-3">
                       <p className="text-sm font-medium text-ink-soft">{step.label}</p>
                       {step.amount !== undefined && (
                         <p className="mt-1 font-display text-xl font-bold text-ink">
-                          {money(step.amount)}
+                          <CountMoney value={step.amount} delay={i * 180} />
                         </p>
                       )}
                     </div>
@@ -445,6 +464,22 @@ function Cascades() {
                   <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                     {result.explanation.narrative}
                   </p>
+
+                  <ol className="mt-5 flex flex-wrap items-center gap-2 text-sm text-ink-soft">
+                    {chain.slice(0, 3).map((s, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-sage text-[11px] font-semibold text-forest">
+                          {i + 1}
+                        </span>
+                        <span>{s.label}</span>
+                        {i < Math.min(3, chain.length) - 1 && (
+                          <span aria-hidden className="text-ink-faint">
+                            →
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
                 </section>
 
                 <section className="rounded-[var(--radius)] bg-sage p-6 sm:p-7">
@@ -453,13 +488,14 @@ function Cascades() {
                   </h2>
                   <p className="mt-2 text-lg text-ink">{result.explanation.smallestFix}</p>
                   <p className="mt-3 font-display text-4xl font-bold text-ink">
-                    {money(result.cascade.projectedSavings)}{" "}
+                    <CountMoney value={result.cascade.projectedSavings} />{" "}
                     <span className="text-sm font-normal text-ink-soft">
                       saved over {result.cascade.projectionMonths} months
                     </span>
                   </p>
                 </section>
               </>
+
             ) : (
               <section className="rounded-[var(--radius)] bg-card p-6 sm:p-7">
                 <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">
