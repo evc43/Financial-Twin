@@ -37,8 +37,15 @@ export const relocationAnalyzeFn = createServerFn({ method: "POST" })
       { monthlySpendingExRent: data.monthlySpendingExRent },
     );
 
-    const { adviseRelocation } = await import("./relocationAdvisor.server");
-    const advice = await adviseRelocation(result);
+    // The written advice is a bonus: if the model is slow, rate-limited or
+    // unreachable, still return the numbers rather than failing the whole call.
+    let advice = null;
+    try {
+      const { adviseRelocation } = await import("./relocationAdvisor.server");
+      advice = await adviseRelocation(result);
+    } catch (e) {
+      console.error("relocation advice failed:", e);
+    }
 
     return { ...result, advice };
   });
