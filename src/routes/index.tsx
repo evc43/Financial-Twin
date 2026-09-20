@@ -361,7 +361,28 @@ function Cascades() {
                 </section>
               </>
             ) : (
-              <p className="text-sm text-ink-soft">No cascade found in this account history.</p>
+              <section className="rounded-[var(--radius)] bg-card p-6 sm:p-7">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">
+                  Why there's no cascade
+                </h2>
+                <p className="mt-2 font-display text-2xl font-bold leading-snug text-ink">
+                  {whyNoCascade(result).headline}
+                </p>
+                <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink-soft">
+                  {whyNoCascade(result).reasons.map((r) => (
+                    <li key={r} className="flex gap-2">
+                      <span aria-hidden className="text-forest">
+                        •
+                      </span>
+                      <span>{r}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-sm text-ink-soft">
+                  Try a rent day that falls in the few days <em>before</em> your payday — that's
+                  when the chain reaction starts.
+                </p>
+              </section>
             )}
 
             <div className="flex flex-wrap items-center gap-4">
