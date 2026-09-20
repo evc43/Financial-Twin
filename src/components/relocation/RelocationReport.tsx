@@ -266,7 +266,7 @@ function BreakEvenGauge({ data }: { data: RelocationReportData }) {
     <div className="mt-5">
       <div className="relative h-4 w-full rounded-full bg-white/25">
         <div
-          className={`absolute inset-y-0 left-0 rounded-full ${clears ? "bg-cream-deep" : "bg-gradient-to-r from-destructive/70 to-destructive/15"}`}
+          className={`absolute inset-y-0 left-0 rounded-full ${clears ? "bg-cream-deep" : "bg-gradient-to-r from-destructive/15 to-destructive/85"}`}
           style={{ width: `${offerPct}%` }}
         />
         <div
