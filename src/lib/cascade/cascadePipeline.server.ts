@@ -65,9 +65,16 @@ export function buildDemoCustomUser(inputs: CascadeInputs) {
     push(transactions, payday, -inputs.monthlyIncome, "ACH DIRECT DEP PAYROLL EMPLOYERCO INC");
     push(transactions, rent, inputs.rentAmount, "AUTOPAY RENT SUNSET PROPERTY MGMT");
 
-    // Overdraft fee only when rent posts BEFORE income arrives that month.
-    if (rent.getTime() < payday.getTime()) {
-      push(transactions, addDays(payday, -1), 35, "OVERDRAFT FEE");
+    // Overdraft fee whenever rent posts within ~5 days BEFORE the NEXT paycheck.
+    // The next paycheck may be this month (rentDay < payDay) or next month
+    // (rentDay > payDay, i.e. rent falls late and payday is early next month).
+    const nextPayday =
+      rent.getTime() < payday.getTime()
+        ? payday
+        : dayInMonth(addMonths(monthStart, 1), inputs.paydayOfMonth);
+    const gapDays = Math.round((nextPayday.getTime() - rent.getTime()) / 86_400_000);
+    if (gapDays > 0 && gapDays <= 5) {
+      push(transactions, addDays(nextPayday, -1), 35, "OVERDRAFT FEE");
     }
 
     push(transactions, addDays(payday, 3), 92.41, "WHOLE FOODS MARKET");
@@ -121,14 +128,16 @@ export async function pullDemoTransactions(inputs: CascadeInputs): Promise<Plaid
   // Sandbox transaction generation is asynchronous: the first sync often returns
   // only a partial first page. Re-sync from scratch until the count stops growing.
   let added: any[] = [];
-  for (let attempt = 0; attempt < 8; attempt++) {
+  let stableRounds = 0;
+
+  for (let attempt = 0; attempt < 12; attempt++) {
     if (attempt) await sleep(2000);
 
+    // Full sync from scratch: keep calling with next_cursor until has_more is false.
     const page: any[] = [];
     let cursor: string | undefined;
     let pages = 0;
-    // Page through EVERY result: keep calling with next_cursor while has_more is true.
-    while (pages < 50) {
+    while (pages < 100) {
       const sync = await plaid("/transactions/sync", {
         access_token: accessToken,
         count: 500,
@@ -142,9 +151,13 @@ export async function pullDemoTransactions(inputs: CascadeInputs): Promise<Plaid
 
     if (page.length > added.length) {
       added = page;
-      continue; // still growing — sandbox may not have finished generating
+      stableRounds = 0;
+      continue; // still growing — sandbox is still generating
     }
-    if (added.length > 0) break;
+
+    // Require two consecutive rounds with no growth before trusting the count.
+    stableRounds++;
+    if (added.length > 0 && stableRounds >= 2) break;
   }
 
   return added.map((t) => ({
