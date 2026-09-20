@@ -188,6 +188,7 @@ function Cascades() {
                 </div>
               </div>
             </section>
+            )}
           </div>
         )}
       </div>
