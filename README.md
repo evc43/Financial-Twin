@@ -49,7 +49,7 @@ npm i
 npm run dev
 ```
 
-The app runs at `http://localhost:8080`.
+The dev server prints its local URL on start.
 
 ## Built with
 
