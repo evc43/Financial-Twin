@@ -81,18 +81,41 @@ const VERDICT: Record<RelocationResult["verdict"], { label: string; blurb: strin
   worse: { label: "Worse", blurb: "Despite the headline number, you'd keep less each month." },
 };
 
-function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+function Row({
+  label,
+  value,
+  strong,
+  emphasis,
+  note,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  emphasis?: boolean;
+  note?: string;
+}) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2.5">
-      <dt className="min-w-0 truncate text-sm text-ink-soft">{label}</dt>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2">
+      <dt
+        className={
+          emphasis
+            ? "min-w-0 truncate text-sm font-bold text-ink"
+            : "min-w-0 truncate text-sm text-ink-soft"
+        }
+      >
+        {label}
+      </dt>
       <dd
         className={
           strong
             ? "font-display text-lg font-bold text-ink"
-            : "text-[15px] font-medium text-ink"
+            : emphasis
+              ? "text-[15px] font-bold text-ink"
+              : "text-[15px] font-medium text-ink"
         }
       >
         {value}
+        {note && <span className="ml-1.5 text-xs font-medium text-ink-faint">{note}</span>}
       </dd>
     </div>
   );
@@ -123,8 +146,18 @@ function SurplusCard({
         <Row label="Gross salary" value={money(bd.grossSalary)} />
         <Row label="Federal tax" value={money(bd.federalTax)} />
         <Row label="FICA" value={money(bd.fica)} />
-        <Row label="State tax" value={money(bd.stateTax)} />
-        <Row label="City tax" value={money(bd.localTax)} />
+        <Row
+          label="State tax"
+          value={money(bd.stateTax)}
+          emphasis
+          {...(Math.round(bd.stateTax) === 0 ? { note: "— none here" } : {})}
+        />
+        <Row
+          label="City tax"
+          value={money(bd.localTax)}
+          emphasis
+          {...(Math.round(bd.localTax) === 0 ? { note: "— none here" } : {})}
+        />
         <Row label="Net per month" value={money(bd.netMonthly)} strong />
         <Row label="Rent" value={money(bd.monthlyRent)} />
         <Row label="Other spending" value={money(bd.monthlyNonRent)} />
@@ -302,13 +335,13 @@ function Relocation() {
             )}
 
             <section className="rounded-[var(--radius)] bg-forest px-6 py-8 sm:px-8">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-cream-deep/70">
+              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white">
                 Break-even salary in {result.offer.city}
               </h2>
               <p className="mt-2 font-display text-5xl font-bold tracking-tight text-cream-deep sm:text-6xl">
                 {money(result.breakEvenSalary)}
               </p>
-              <p className="mt-3 text-sm text-cream-deep/80">
+              <p className="mt-2 text-sm font-semibold text-white">
                 {result.offerClearsBreakEvenBy === null
                   ? "We couldn't solve a break-even salary for this pair of cities."
                   : result.offerClearsBreakEvenBy >= 0
@@ -344,6 +377,11 @@ function Relocation() {
                   strong
                 />
               </dl>
+              <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
+                {result.monthsToRecoup === null
+                  ? `The move costs about ${money(result.firstYearMoveCost)} up front, and you don't keep more each month — so it never pays that back.`
+                  : `The move costs about ${money(result.firstYearMoveCost)} up front, but the extra ${money(Math.abs(result.surplusDelta))} you keep each month pays that back in ${result.monthsToRecoup} month${result.monthsToRecoup === 1 ? "" : "s"} — after that it's pure gain.`}
+              </p>
             </section>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
