@@ -230,7 +230,7 @@ function Relocation() {
             <div className="mt-6 flex flex-wrap items-center justify-end gap-4">
               <button
                 type="button"
-                disabled={loading}
+                disabled={loading || !canSubmit}
                 onClick={onSubmit}
                 className="rounded-full bg-forest px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-forest-hover disabled:opacity-60"
               >
